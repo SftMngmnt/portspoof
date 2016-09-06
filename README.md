@@ -1,5 +1,7 @@
 #Portspoof [![Build Status](https://secure.travis-ci.org/drk1wi/portspoof.png)](https://secure.travis-ci.org/drk1wi/portspoof.png)
 
+{ All Original code credited to drk1wi. Modification for school project at UT Arlington }
+
 ## Effective defense against port scanners
 
 ### Short description:
