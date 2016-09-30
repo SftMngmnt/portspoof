@@ -43,6 +43,10 @@
 #include "connection.h"
 #include "Configuration.h"
 
+#ifndef SOL_IP
+#define SOL_IP IPPROTO_IP
+#endif
+
 /*
 ipstr has to be of length INET_ADDRSTRLEN
 or INET6_ADDRSTRLEN
