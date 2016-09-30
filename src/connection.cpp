@@ -162,6 +162,19 @@ void* process_connection(void *arg)
 					Utils::log_write(configuration,msg);
 					free(msg);
 					//
+					//TODO
+					// iptsr is the current IP address
+					/**
+					 * AUTOMATIC BLOCKING WITHOUT A TIMER
+					 * int logArray = new LogArray();
+					 *
+					 * if ipstr is not in LogArray
+					 *	 add: ipstr -> LogArray
+					 *	  // this means it's a new ip address to block
+					 *	 execlp("iptables block: ipstr")	// forking process call direction to iptables
+					 *
+					 **/
+			   				
 				
 					close_socket:
 					if(configuration->getConfigValue(OPT_DEBUG))
@@ -262,7 +275,7 @@ void* process_connection(void *arg)
 					
 			  	if(configuration->getConfigValue(OPT_DEBUG))
 				{
-					
+
 				
 				fprintf(stdout,"signature sent -> ");	
 				for(int t=0;t<buffertosendsize;t++)
@@ -288,6 +301,22 @@ void* process_connection(void *arg)
 				
 				close(threads[tid].clients[i]);
 				
+					/**
+					 * AUTOMATIC BLOCKING WITH A TIMER
+					 * int logArray = new LogArray();
+					 *	
+					 *	AFTER SENT CONNECTION PER PORT
+					 *	 count all original_port's
+					 *	 sleep
+					 *	 // this means it's a new ip address to block
+					 *	 new fork()
+					 *	 {
+					 *	 	wait until all ports connected on are sent
+					 *		execlp("iptables block: ipstr")	// forking process call direction to iptables
+					 *	 }
+					 *
+					 **/		
+
 				free(buffertosend);
 				
 				pthread_mutex_lock(&new_connection_mutex);

@@ -62,6 +62,10 @@ bool Configuration::getConfigValue(int value)
 
 void  Configuration::usage(void)
 {
+	/**
+	 * ADD ALL OF OUR NEWLY ADDED FEATURE EXPLANATIONS
+	 */
+	
 	fprintf(stdout,"Usage: portspoof [OPTION]...\n"
 	"Portspoof - service emulator / frontend exploitation framework.\n\n"
 	  "-i			  ip : Bind to a particular  IP address\n"
@@ -157,6 +161,20 @@ bool Configuration::processArgs(int argc, char** argv)
 		case 'h':
 			this->usage();
 			break;
+
+		/** Rams Feature
+		 * Before The program runs:
+		 * waitpid()
+		 * new fork()
+		 * {
+		 * 	KNOW TWO THINGS:
+		 * 	PARTA: 	INTEFACE: ens33 OR eth0
+		 *  PARTA:  PORT NUMBER: 4444 by default if not specified:
+		 *	execlp( iptables --open #port_number );
+		 *	wait();
+		 * 	execlp(iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports 4444)
+		 * 	}
+		 */
 		default:
 			fprintf(stdout,"Try ` %s -h' for more information.\n\n", __progname);
 			exit(0);
