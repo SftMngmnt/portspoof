@@ -62,6 +62,20 @@
 #define OPT_FUZZ_RANDOM 12
 #define OPT_RUN_AS_D 13
 
+/**
+ * Automatic firewall configuration 
+ */
+#define OPT_FIREWALL_INTF 14
+#define OPT_FIREWALL_PRT 15
+/**
+ * Timed Blacklist setting
+ */
+#define OPT_TIMER_BLK 16
+/**
+ * Automatic Blacklist
+ */
+#define OPT_AUTO_BLK 17
+
 
 #define MAX_PORTS 65535
 
@@ -110,6 +124,13 @@ class Configuration {
 		std::string bind_ip;
 		std::string username;
 		std::string group;
+		
+		/**
+		 * adding port number with string
+		 * for auto-iptables/ipset configuration
+		 **/
+		std::string interface;
+		int open_port_number;
 
 		unsigned short int port;
 		int thread_number;
@@ -121,7 +142,7 @@ class Configuration {
 		Port_Signature_Map portsignatureemap;
 		Port_BufferSize_Map portbuffermap;
 		Raw_Signatures_Vector rawsignatures;
-		
+
 		
 	public:
 		Configuration();
@@ -133,6 +154,7 @@ class Configuration {
 
 		bool processSignatureFile();
 		bool generateBufferSize();
+		
 		//getters
 		std::string getConfigFile();
 		std::string getSignatureFile();
@@ -140,6 +162,14 @@ class Configuration {
 		std::string getBindIP();
 		std::string getNmapfuzzSignaturesFile();
 		std::string getFuzzPayloadFile();
+		
+		/**
+		 * added getters for default
+		 * iptables configuration
+		 **/
+		std::string getInterface();
+		int getOpenPortNumber();
+
 		bool getConfigValue(int value);
 		unsigned short int getPort();
 		int getThreadNr();

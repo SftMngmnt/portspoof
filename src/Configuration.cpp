@@ -52,6 +52,8 @@ Configuration::Configuration()
 	fuzzpayload_file = std::string(FUZZ_FILE_PAYLOAD);	
 	thread_number=MAX_THREADS;
 	fuzzing_mode=0;
+
+
 	return;
 }
 
@@ -80,7 +82,13 @@ void  Configuration::usage(void)
 	  "-D			  run as daemon process\n"
 	  "-d			  disable syslog\n"
 	  "-v			  be verbose\n"
-	  "-h			  display this help and exit\n");
+	  "-h			  display this help and exit\n"
+	  " New Features Added \n"
+	  "		-A		[interface] Automatically Configure Firewall Rules -- By: Ram\n"
+	  "		-P		[port number] Automatically Configure Firewall Rules -- By: Ram\n"
+	  "		-T		Blacklist Connecting IP -After- scanner recieves signatures -- By: Sunday\n"
+	  "		-B		Automatically blacklist any connecting IP (semi-honeypot funcationality) -- By: Kurt\n"
+	  );
 	
 	exit(1);
 }
@@ -90,8 +98,31 @@ bool Configuration::processArgs(int argc, char** argv)
 	int	ch;
 	extern char *__progname;
 	
-	while ((ch = getopt(argc, argv,"l:i:p:s:c:f:n:dvh12D")) != -1) {
+	while ((ch = getopt(argc, argv,"A:P:l:i:p:s:c:f:n:dvh12DTB")) != -1) {
 		switch (ch) {
+		case 'T':
+			// Blacklist 
+			this->opts[OPT_TIMER_BLK]=1;
+			fprintf(stdout,"-> Implemented with Blacklisting any IP that connects -After- spoofed signatures sent\n");
+			break;
+		case 'B':
+			// Blacklist -After- spoofed signature sent
+			this->opts[OPT_AUTO_BLK]=1;
+			fprintf(stdout,"-> Implemented with Blacklisting any IP that connects automatically\n");
+			break;
+		case 'A':
+			// Firewall Configuration INTERFACE
+			this->interface = std::string(optarg);
+			this->opts[OPT_FIREWALL_INTF]=1;
+			fprintf(stdout,"-> Using automatic firewall setup interface: %s\n",this->interface.c_str() );
+			break;
+		case 'P':
+			// Firewall Configuration PORT
+			this->open_port_number = atoi(optarg);
+			this->opts[OPT_FIREWALL_PRT]=1;
+			fprintf(stdout,"-> Using automatic firewall port number: %i\n",this->open_port_number );
+			break;
+		// Original
 		case 'i':
 			this->bind_ip = std::string(optarg);
 			this->opts[OPT_IP]=1;
@@ -102,9 +133,8 @@ bool Configuration::processArgs(int argc, char** argv)
 			break;
 		case 's':
 			this->signaturefile  = std::string(optarg);
-			fprintf(stdout,"-> Using user defined signature file %s\n",this->signaturefile.c_str());
+			fprintf(stdout,"-> Using user defined signature file %s\n",this->signaturefile.c_str() );
 			this->opts[OPT_SIG_FILE]=1;
-			
 			break;
 		case 'c':
 			this->configfile  = std::string(optarg);
@@ -152,7 +182,6 @@ bool Configuration::processArgs(int argc, char** argv)
 				exit(0);
 			}
 			fprintf(stdout,"-> Generating fuzzing payloads internally!\n");
-
 			break;
 		case '2':
 			this->opts[OPT_NOT_NMAP_SCANNER]=1;
@@ -161,20 +190,6 @@ bool Configuration::processArgs(int argc, char** argv)
 		case 'h':
 			this->usage();
 			break;
-
-		/** Rams Feature
-		 * Before The program runs:
-		 * waitpid()
-		 * new fork()
-		 * {
-		 * 	KNOW TWO THINGS:
-		 * 	PARTA: 	INTEFACE: ens33 OR eth0
-		 *  PARTA:  PORT NUMBER: 4444 by default if not specified:
-		 *	execlp( iptables --open #port_number );
-		 *	wait();
-		 * 	execlp(iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports 4444)
-		 * 	}
-		 */
 		default:
 			fprintf(stdout,"Try ` %s -h' for more information.\n\n", __progname);
 			exit(0);
@@ -208,8 +223,38 @@ bool Configuration::processArgs(int argc, char** argv)
 		exit(1);
 
 	}
+		/** Rams Feature
+		 * Before The program runs:
+		 * waitpid()
+		 * new fork()
+		 * {
+		 * 	KNOW TWO THINGS:
+		 * 	PARTA: 	INTEFACE: ens33 OR eth0
+		 *  PARTA:  PORT NUMBER: 4444 by default if not specified:
+		 *	execlp( iptables --open #port_number );
+		 *	wait();
+		 * 	execlp(iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports 4444)
+		 * 	}
+		 */
 
 	return 0;
+}
+
+/**
+ * getters for default ip tables
+ *		std::string interface;
+ *		int open_port_number;
+ *
+ **/
+
+std::string Configuration::getInterface()
+{
+	return this->interface;
+}
+
+int Configuration::getOpenPortNumber()
+{
+	return this->open_port_number;
 }
 
 std::string Configuration::getConfigFile()
