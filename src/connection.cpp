@@ -43,6 +43,7 @@
 #include "connection.h"
 #include "Configuration.h"
 
+// added to compile on macs
 #ifndef SOL_IP
 #define SOL_IP IPPROTO_IP
 #endif
