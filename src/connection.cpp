@@ -307,6 +307,7 @@ void* process_connection(void *arg)
 				close(threads[tid].clients[i]);
 				
 					/**
+					 *
 					 * AUTOMATIC BLOCKING WITH A TIMER
 					 * int logArray = new LogArray();
 					 *	
