@@ -61,7 +61,6 @@
 #define OPT_NOT_NMAP_SCANNER 11
 #define OPT_FUZZ_RANDOM 12
 #define OPT_RUN_AS_D 13
-
 /**
  * Automatic firewall configuration 
  */

@@ -43,7 +43,7 @@
 #include "connection.h"
 #include "Configuration.h"
 
-// added to compile on macs
+// added to compile on MacOS
 #ifndef SOL_IP
 #define SOL_IP IPPROTO_IP
 #endif
@@ -110,6 +110,18 @@ void* process_connection(void *arg)
 	int select_return;
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
+
+	/**
+	* automatic blacklisting on any port connection
+	**/
+	if(configuration->getConfigValue(OPT_AUTO_BLK))
+	{
+		fprintf(stdout,"%d : is being added to blacklist\n",ipstr);
+		/**
+		 * spawn fork exec ipset add
+		**/
+	}
+	fprintf(stdout,"%d : is being added to blacklist\n",ipstr);
 
 	while(1) {
 		
@@ -179,8 +191,7 @@ void* process_connection(void *arg)
 					 *	 execlp("iptables block: ipstr")	// forking process call direction to iptables
 					 *
 					 **/
-			   				
-				
+						
 					close_socket:
 					if(configuration->getConfigValue(OPT_DEBUG))
 					fprintf(stdout,"Thread nr. %d : client %d closed connection\n",tid, threads[tid].clients[i]);
