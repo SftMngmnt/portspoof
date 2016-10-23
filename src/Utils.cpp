@@ -51,7 +51,6 @@ pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 /**
  * Run system commands such as making iptables i.e NAT rules,
  * building ipset list, iptables DROP for ipset.
- * @param option; if both options are sent in as parameters: port & network card
  */
 void Utils::preConfigFirewall(Configuration* configuration)
 {

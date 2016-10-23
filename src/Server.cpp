@@ -36,6 +36,8 @@
 #include <string>
 
 #include "Server.h"
+#include "Utils.h"
+
 using std::string;
 
 pthread_cond_t new_connection_cond = PTHREAD_COND_INITIALIZER;
@@ -165,19 +167,6 @@ bool Server::run()
 			start:
 
 			pthread_mutex_lock(&new_connection_mutex);
-			/**
-			 * trying to single out ONE ip per connection in thread pool.
-			 * Putting inside mutex just incase.
-			 */
-			get_ipstr_server(newsockfd, ipstr);
-			compare_me = string(ipstr);
-
-			if( compare_me.compare(temp) != 0 )
-			{
-				get_ipstr_server(newsockfd, ipstr);
-				temp = string(ipstr);
-				fprintf(stdout,"\nnew connection: %s",ipstr );
-			}
 
 			choosen=choose_thread();
 
@@ -195,6 +184,26 @@ bool Server::run()
 				fflush(stdout);
 			}
 
+			/**
+			 * trying to single out ONE ip per connection in thread pool.
+			 * Putting inside mutex just incase.
+			 */
+			//get_ipstr_server(newsockfd, ipstr);
+			//compare_me = string(ipstr);
+			//if( compare_me.compare(temp) != 0 )
+			if(threads[choosen].client_count == 1)
+			{
+				get_ipstr_server(newsockfd, ipstr);
+				temp = string(ipstr);
+				fprintf(stdout,"\nnew connection: %s",ipstr );
+
+				/**
+				 * immediate blacklisting can be done here
+				 * sending ip directly into ipset would be sufficient?
+				 * threads would still be running but this maybe not the most sufficient spot
+				 */
+				Utils::forking("echo sending in ipset add " + temp);
+			}
 
 			for(int i = 0; i < MAX_CLIENT_PER_THREAD; i++)
 			{

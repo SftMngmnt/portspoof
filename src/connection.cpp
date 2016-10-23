@@ -54,6 +54,7 @@ or INET6_ADDRSTRLEN
 */
 int get_ipstr(int fd, char *ipstr)
 {
+
   socklen_t len;
   struct sockaddr_storage addr;
 
@@ -303,25 +304,8 @@ void* process_connection(void *arg)
 				if(send(threads[tid].clients[i], buffertosend, buffertosendsize,0)==-1)
 					perror("Send to socket failed");
 				
-				
+				// single thread closes
 				close(threads[tid].clients[i]);
-				
-					/**
-					 *
-					 * AUTOMATIC BLOCKING WITH A TIMER
-					 * int logArray = new LogArray();
-					 *	
-					 *	AFTER SENT CONNECTION PER PORT
-					 *	 count all original_port's
-					 *	 sleep
-					 *	 // this means it's a new ip address to block
-					 *	 new fork()
-					 *	 {
-					 *	 	wait until all ports connected on are sent
-					 *		execlp("iptables block: ipstr")	// forking process call direction to iptables
-					 *	 }
-					 *
-					 **/		
 
 				free(buffertosend);
 				
