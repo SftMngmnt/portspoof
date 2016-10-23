@@ -45,27 +45,27 @@ Thread threads[MAX_THREADS];
 * This maybe the place where the plain IP address is formatted.
 * commented out getpeername(); since we already have it in Server
 */
-//int get_ipstr(char *ipstr)
-//{
-//  socklen_t len;
-//  struct sockaddr_storage addr;
-//
-//  len = sizeof(struct sockaddr_storage);
-//  // int get_ipstr(int fd, char *ipstr) { ... }
-//  //getpeername(fd, (struct sockaddr *)&addr, &len);
-//
-//  if (addr.ss_family == AF_INET)
-//  {
-//    struct sockaddr_in *s = (struct sockaddr_in *)&addr;
-//    inet_ntop(AF_INET, &s->sin_addr, ipstr, INET_ADDRSTRLEN);
-//  }
-//  else
-//  { // AF_INET6
-//    struct sockaddr_in6 *s = (struct sockaddr_in6 *)&addr;
-//    inet_ntop(AF_INET6, &s->sin6_addr, ipstr, INET6_ADDRSTRLEN);
-//  }
-//  return 1;
-//}
+int get_ipstr(int fd, char *ipstr)
+{
+  socklen_t len;
+  struct sockaddr_storage addr;
+
+  len = sizeof(struct sockaddr_storage);
+  // int get_ipstr(int fd, char *ipstr) { ... }
+  getpeername(fd, (struct sockaddr *)&addr, &len);
+
+  if (addr.ss_family == AF_INET)
+  {
+    struct sockaddr_in *s = (struct sockaddr_in *)&addr;
+    inet_ntop(AF_INET, &s->sin_addr, ipstr, INET_ADDRSTRLEN);
+  }
+  else
+  { // AF_INET6
+    struct sockaddr_in6 *s = (struct sockaddr_in6 *)&addr;
+    inet_ntop(AF_INET6, &s->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+  }
+  return 1;
+}
 
 
 Server::Server(Configuration* configuration)
