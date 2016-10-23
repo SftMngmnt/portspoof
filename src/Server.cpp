@@ -72,15 +72,6 @@ int get_ipstr_server(int fd, char *ipstr)
 
 Server::Server(Configuration* configuration)
 {	
-	// simpler debug -v leads to a seg fault
-	if(true)
-	{
-		char ipstr[INET6_ADDRSTRLEN];
-		memset(ipstr, '\0', INET6_ADDRSTRLEN);
-		get_ipstr_server(newsockfd, ipstr);
-		fprintf(stdout,"\nnew connection: %s",ipstr );
-	}
-
 	this->configuration = configuration;
 
 	// !!!
@@ -167,6 +158,15 @@ int choosen;
         else{
 
 			nonblock(newsockfd); 
+
+			// simpler debug -v leads to a seg fault
+			if(true)
+			{
+				char ipstr[INET6_ADDRSTRLEN];
+				memset(ipstr, '\0', INET6_ADDRSTRLEN);
+				get_ipstr_server(newsockfd, ipstr);
+				fprintf(stdout,"\nnew connection: %s",ipstr );
+			}
 	    	
 			start:
             pthread_mutex_lock(&new_connection_mutex);
