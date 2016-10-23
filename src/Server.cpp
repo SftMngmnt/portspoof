@@ -45,7 +45,7 @@ Thread threads[MAX_THREADS];
 * This maybe the place where the plain IP address is formatted.
 * commented out getpeername(); since we already have it in Server
 */
-int get_ipstr(int fd, char *ipstr)
+int get_ipstr_server(int fd, char *ipstr)
 {
   socklen_t len;
   struct sockaddr_storage addr;
@@ -177,7 +177,7 @@ int choosen;
         	{
         	    char ipstr[INET6_ADDRSTRLEN];
         		memset(ipstr, '\0', INET6_ADDRSTRLEN);
-        		get_ipstr(choosen, ipstr);
+        		get_ipstr_server(choosen, ipstr);
         		fprintf(stdout,"\nnew connection: %s",ipstr );
         	}
 
