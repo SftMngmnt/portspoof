@@ -138,7 +138,7 @@ Server::Server(Configuration* configuration)
 bool Server::run()
 {
 
-	int choosen, flag;
+	int choosen, flag=0;
 	char ipstr[INET6_ADDRSTRLEN];
 	memset(ipstr, '\0', INET6_ADDRSTRLEN);
 
@@ -148,7 +148,7 @@ bool Server::run()
 		/* wait for a connection */
 		addrlen = sizeof(peer_name);
 		newsockfd = accept(sockd, (struct sockaddr*)&peer_name,(socklen_t*) &addrlen);
-		flag = 0;
+
 		if (newsockfd < 0)
 		{
 			perror("ERROR on accept");
@@ -162,8 +162,6 @@ bool Server::run()
 			nonblock(newsockfd);
 
 			start:
-			pthread_mutex_lock(&new_connection_mutex);
-
 			// simpler debug -v leads to a seg fault
 			if( flag != 1)
 			{
@@ -171,6 +169,8 @@ bool Server::run()
 				fprintf(stdout,"\nnew connection: %s",ipstr );
 				flag = 1;
 			}
+
+			pthread_mutex_lock(&new_connection_mutex);
 
 			choosen=choose_thread();
 
