@@ -72,6 +72,7 @@ void Utils::preConfigFirewall(Configuration* configuration)
 	/* BEGIN LINUX ONLY  -- suggestion to use a iptables script like ufw to avoid accidently adding the same rules */
 	single_command = "iptables -I INPUT 1 -p tcp --dport " + port + " -j ACCEPT";
 	forking(single_command);
+	forking("")
 	/**
    # Open the port to direct all traffic through NAT on port 4444
 
@@ -126,12 +127,14 @@ void Utils::forking(std::string single_command)
 	int status, exec_ret;
 
 	// parse single_command into vector<string>
+	// http://stackoverflow.com/questions/5607589/right-way-to-split-an-stdstring-into-a-vectorstring
 	std::stringstream _string_stream(single_command);
 	std::istream_iterator<std::string> begin(_string_stream);
 	std::istream_iterator<std::string> end;
 	std::vector<std::string> commands(begin, end);
 
 	// create/convert vector string into array for exec from commands
+	// https://stackoverflow.com/questions/1739184/how-does-one-properly-use-the-unix-exec-c-command
 	char **c_commands = new char*[commands.size() + 2];
 	// parsing
 	for(int i = 0; i < commands.size(); i++)
