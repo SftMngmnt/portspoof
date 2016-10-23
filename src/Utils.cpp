@@ -38,6 +38,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string>
+#include <iterator>
 
 #include "Utils.h"
 using std::string;
