@@ -74,7 +74,8 @@ void Utils::preConfigFirewall(Configuration* configuration)
 	/* BEGIN LINUX ONLY  -- suggestion to use a iptables script like ufw to avoid accidently adding the same rules */
 	single_command = "iptables -I INPUT 1 -p tcp --dport " + port + " -j ACCEPT";
 	forking(single_command);
-	//forking("");
+	single_command = "iptables -t nat -A PREROUTING -i " + interface + " -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports $PORT";
+	forking("iptables -t nat -A PREROUTING -i " + interface + " -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports $PORT");
 
 	/**
    # Open the port to direct all traffic through NAT on port 4444
@@ -151,7 +152,7 @@ void Utils::forking(std::string single_command)
 	/* take over child with execvp */
 	if(pid == 0)  /* CHILD */
 	{	/* execvp uses environment PATH set by shell; /bin/,/usr/bin, etc. */
-		fprintf(stdout,"%s\n", c_commands[0]);
+		fprintf(stdout,"Executing: %s\n", single_command.c_str());
 		//fprintf(stdout,"NOT EXECUTING YET %s\n",single_command.c_str() );
 		exec_ret = execvp(c_commands[0],c_commands);
 
