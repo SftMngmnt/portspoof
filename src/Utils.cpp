@@ -77,6 +77,9 @@ void Utils::preConfigFirewall(Configuration* configuration)
 	single_command = "iptables -t nat -A PREROUTING -i " + interface + " -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports $PORT";
 	forking("iptables -t nat -A PREROUTING -i " + interface + " -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports $PORT");
 
+	fprintf(stdout,"debugging! now exiting from whole program in UTIL$\n");
+	exit(0);
+
 	/**
    # Open the port to direct all traffic through NAT on port 4444
 
@@ -168,8 +171,6 @@ void Utils::forking(std::string single_command)
 	if (pid !=0)	/* PARENT */
 	{
 		fflush( NULL );
-		fprintf(stdout,"debugging! now exiting from whole program in UTIL$\n");
-		exit(0);
 	}
 
 	if(exec_ret == -1)
