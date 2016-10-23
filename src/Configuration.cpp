@@ -107,13 +107,13 @@ bool Configuration::processArgs(int argc, char** argv)
 		case 'T':
 			// Blacklist 
 			this->opts[OPT_TIMER_BLK]=1;
-			fprintf(stdout,"-> starting disappearing honeypot");
+			fprintf(stdout,"-> starting disappearing honeypot\n");
 			fprintf(stdout,"-> Implemented with Blacklisting any IP that connects -After- spoofed signatures sent\n");
 			break;
 		case 'B':
 			// Blacklist -After- spoofed signature sent
 			this->opts[OPT_AUTO_BLK]=1;
-			fprintf(stdout,"-> starting stupid honeypot");
+			fprintf(stdout,"-> starting stupid honeypot\n");
 			fprintf(stdout,"-> Implemented with Blacklisting any IP that connects automatically (skips over all other features)\n");
 			break;
 		case 'A':
