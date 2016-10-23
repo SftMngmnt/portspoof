@@ -111,17 +111,6 @@ void* process_connection(void *arg)
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 
-	/**
-	* automatic blacklisting on any port connection
-	**/
-	if(configuration->getConfigValue(OPT_AUTO_BLK))
-	{
-		fprintf(stdout,"%d : is being added to blacklist\n",ipstr);
-		/**
-		 * spawn fork exec ipset add
-		**/
-	}
-	fprintf(stdout,"%d : is being added to blacklist\n",ipstr);
 
 	while(1) {
 		

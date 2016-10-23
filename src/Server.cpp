@@ -41,6 +41,14 @@ pthread_mutex_t new_connection_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 Thread threads[MAX_THREADS];
 
+/*
+# blacklist the ip
+# ipset add port_blacklist 111.222.333.444
+
+# remove ip
+# ipset port_blacklist 111.222.333.444
+ */
+
 Server::Server(Configuration* configuration)
 {	
 	this->configuration = configuration;
