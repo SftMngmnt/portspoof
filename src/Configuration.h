@@ -51,7 +51,7 @@
 #define OPT_FUZZ_WORDLIST 1
 #define OPT_IP 2
 #define OPT_PORT 3
-#define OPT_DEBUG 4
+#define OPT_DEBUG 1
 #define OPT_SIG_FILE 5
 #define OPT_LOG_FILE 6
 #define OPT_SYSLOG_DIS 7
