@@ -122,7 +122,7 @@ void Utils::preConfigFirewall(Configuration* configuration)
  * each command sent is a single command line (no piping etc.).
  * the whole execvp need (parsing string into array) is done here
  */
-void Utils::forking(string single_command)
+void Utils::forking(std::string single_command)
 {
 
 	int status, exec_ret;
