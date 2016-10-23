@@ -190,12 +190,12 @@ bool Server::run()
 			 */
 			//get_ipstr_server(newsockfd, ipstr);
 			//compare_me = string(ipstr);
-			//if( compare_me.compare(temp) != 0 )
-			if(threads[choosen].client_count == 1)
+			if( compare_me.compare(temp) != 0 )
 			{
 				get_ipstr_server(newsockfd, ipstr);
 				temp = string(ipstr);
 				fprintf(stdout,"\nnew connection: %s",ipstr );
+				fprintf(stdout,"DEBUG: TID: %d #Connections: %d",choosen,threads[choosen].client_count);
 
 				/**
 				 * immediate blacklisting can be done here
