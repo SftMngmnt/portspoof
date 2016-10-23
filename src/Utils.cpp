@@ -69,8 +69,8 @@ void Utils::preConfigFirewall(Configuration* configuration)
 	 *  - else: write
 	 */
 
-	/* BEGIN LINUX ONLY */
-	single_command = "iptables -h";
+	/* BEGIN LINUX ONLY  -- suggestion to use a iptables script like ufw to avoid accidently adding the same rules */
+	single_command = "iptables -I INPUT 1 -p tcp --dport " + port + " -j ACCEPT";
 	forking(single_command);
 	/**
    # Open the port to direct all traffic through NAT on port 4444
