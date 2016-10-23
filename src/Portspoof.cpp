@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 		 * the network interface is specified for automatic firewall rules
 		 * Rams Feature
 		 */
-		Utils::SystemCommands(configuration);
+		Utils::preConfigFirewall(configuration);
 	}
 
 	// run as daemon

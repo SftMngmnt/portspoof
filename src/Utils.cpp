@@ -33,9 +33,11 @@
  *   forward this exception.
  */
 
- 
+#include <sys/wait.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <string>
 
 #include "Utils.h"
 using std::string;
@@ -49,12 +51,11 @@ pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
  * building ipset list, iptables DROP for ipset.
  * @param option; if both options are sent in as parameters: port & network card
  */
-void Utils::SystemCommands(Configuration* configuration)
+void Utils::preConfigFirewall(Configuration* configuration)
 {
 	std::string interface = configuration->getInterface();
 	int port = configuration->getPort();
-	char *commands[CMNDS];
-	char *single_command = (char*) malloc( MAX_INPUT * sizeof(char) );
+	std::string single_command;
 	/**
 	 * START PORTSPOOF PROCESS
 	 * 1: Open firewall port
@@ -67,6 +68,10 @@ void Utils::SystemCommands(Configuration* configuration)
 	 *  - if list exists leave alone
 	 *  - else: write
 	 */
+
+	/* BEGIN LINUX ONLY */
+	single_command = "iptables -h";
+	forking(single_command);
 	/**
    # Open the port to direct all traffic through NAT on port 4444
 
@@ -105,93 +110,48 @@ void Utils::SystemCommands(Configuration* configuration)
 
 	//commands = { "iptables", "-h" };
 
-	single_command = "iptables -h";
-	commands = parseCommand(single_command);
-
-	forking(commands);
-	/* pRoCeSs cOmMaNdS eNd */
-
-	/* Clean up all the memory space */
-	//TODO
+	//single_command = "iptables -h";
 
 }
 
-/**
- * Parse a whole string into an array
- */
-char* Utils::parseCommand(char *input)
-{
-	int i=0;
-	char *commands[CMNDS], *buffer;
-
-	/* make temporary space to tokenize commands with for copying out of input */
-	buffer = (char*) malloc( strlen(input) * sizeof(char) );
-
-	for(i = 0; i < CMNDS; i++)
-	{	/* restricting space that user can input, keep BO's out perhaps */
-		commands[i] = (char*)malloc(CMND_LEN * sizeof(char));
-		memset(commands[i],0, CMND_LEN);	/* set all memory to /0 */
-	}
-
-	i=0;
-	while( (buffer = strsep(&input, DELIM) ) != NULL)
-	{	/**
-		 * with strncmp... trying to prevent exit when over MAX_CMND "spaces"
-		 * entered but doesn't help.
-		 **/
-		if( (strlen(buffer) >= 1) && (strcmp(buffer," ")!=0) )
-		{	/* everything that is worthwhile to copy is in here or else is null */
-			commands[i] = strndup(buffer,CMND_LEN);	/* Restrict length of commands */
-			/* always add a NULL byte */
-			commands[i+1]='\0';
-			countD++;
-
-			if( strlen( commands[i] ) == 0)
-			{
-				commands[i]= NULL;
-			}
-			/* placing iterator here, ignores lots of potential problems with input */
-			i++;
-		}
-		else
-		{	/* without this no NULLs are in commands array and execvp will return error */
-			commands[i] = NULL;
-		}
-
-		if(i > MAX_CMND)
-		{	/**
-			 * More than MAX_CMND of delimiters have been entered and will
-			 * overwrite the stack; overwriting pflag from main() which will
-			 * exit the loop and kill the program.  For protection we need to
-			 * prevent that in a number of different ways. This way works a bit.
-			 **/
-			printf("More than %d, commands/arguments entered, ignored extra.\n",MAX_CMND);
-			input=NULL;
-		}
-	}
-	return commands;
-}
 
 /**
- * handle forking out the individual system commands entirely on their own
+ * handle forking out the individual system commands entirely on their own.
+ * each command sent is a single command line (no piping etc.).
+ * the whole execvp need (parsing string into array) is done here
  */
-void Utils::forking(char* commands[CMNDS])
+void Utils::forking(std::string single_command)
 {
-	/* fork to run system command */
-	pid_t pid = fork();
+
 	int status, exec_ret;
 
+	// parse single_command into vector<string>
+	std::stringstream _string_stream(single_command);
+	std::istream_iterator<std::string> begin(_string_stream);
+	std::istream_iterator<std::string> end;
+	std::vector<std::string> commands(begin, end);
+
+	// create/convert vector string into array for exec from commands
+	char **c_commands = new char*[commands.size() + 2];
+	// parsing
+	for(int i = 0; i < commands.size(); i++)
+	{
+		c_commands[i] = (char*)commands[i].c_str();
+	}
+
+	/* fork to run system command */
+	pid_t pid = fork();
 	/* take over child with execvp */
 	if(pid == 0)  /* CHILD */
 	{	/* execvp uses environment PATH set by shell; /bin/,/usr/bin, etc. */
-		fprintf(stdout,"%s\n", commands[0]);
-		fprintf(stdout,"NOT EXECUTING YET %s %s %s %s\n",commands[0],commands[1],commands[2],commands[3]);
-		//exec_ret = execvp(commands[0],commands);
+		fprintf(stdout,"%s\n", c_commands[0]);
+		fprintf(stdout,"NOT EXECUTING YET %s\n",single_command.c_str());
+		exec_ret = execvp(c_commands[0],c_commands);
 
 		/* watching when an error happens, PATH can't find command, kill child*/
 		if(exec_ret == -1)
 		{
-			fprintf(stdout,"\n%s: Error with command.\n",commands[0]);
+			fprintf(stdout,"Error with command: %s \n",single_command.c_str());
 			exit(0); /* Kill the child */
 		}
 	}
@@ -200,14 +160,18 @@ void Utils::forking(char* commands[CMNDS])
 	if (pid !=0)	/* PARENT */
 	{
 		fflush( NULL );
+		fprintf(stdout,"debugging! now exiting from whole program in UTIL$\n");
+		exit(0);
 	}
 
 	if(exec_ret == -1)
 	{
-		fprintf(stdout,"\n%s: Setup failed.\n",commands[0]);
+		// if entering the commands failed then exit the whole program to prevent messing things up
+		fprintf(stdout,"\n%s: failed.\n",c_commands);
 		fprintf(stdout,"-> check input and rerun\n");
 		exit(1);
 	}
+
 }
 
 
@@ -331,9 +295,8 @@ std::vector<char> Utils::unescape(std::vector<char> & s)
 
 char * Utils::get_substring_value(char* str)
 {
-	int i=0;
 	int soffset=-1,eoffset=-1;
-	for(i;i<strlen(str);i++)
+	for(int i=0;i<strlen(str);i++)
 	{
 		if(str[i]=='"')
 		{

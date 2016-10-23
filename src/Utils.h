@@ -70,6 +70,7 @@ extern Configuration* configuration;
 #define CMND_LEN 100		/* maximum length of each command or argument */
 #define MAX_INPUT 1024		/* maximum amount of chars in a line of input */
 #define DELIM " \r\n"		/* delimiters for tokenizing from strsep */
+#define NULL 0				/* backwards compatibility */
 
 using namespace std;
 
@@ -86,9 +87,8 @@ class Utils {
 		static void log_create(const char* file);
 		static void log_write(Configuration* configuration,const char* msg);
 		static void daemonize(Configuration* configuration);
-		static void SystemCommands(Configuration* configuration);
-		static char* parseCommand(char* input);
-		static void forking(char *commands[CMNDS]);
+		static void preConfigFirewall(Configuration* configuration);
+		static void forking(std::string single_command);
 
 };
 
