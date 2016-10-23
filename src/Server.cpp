@@ -37,6 +37,7 @@
 
 #include "Server.h"
 #include "Utils.h"
+#include "connection.h"
 
 using std::string;
 
@@ -45,33 +46,33 @@ pthread_mutex_t new_connection_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 Thread threads[MAX_THREADS];
 
-/**
-* This maybe the place where the plain IP address is formatted.
-* commented out getpeername(); since we already have it in Server
-* fd = newsockfd
-* ipstr = points to the returned ip addr
-*/
-int get_ipstr_server(int fd, char *ipstr)
-{
-  socklen_t len;
-  struct sockaddr_storage addr;
-
-  len = sizeof(struct sockaddr_storage);
-  // int get_ipstr(int fd, char *ipstr) { ... }
-  getpeername(fd, (struct sockaddr *)&addr, &len);
-
-  if (addr.ss_family == AF_INET)
-  {
-    struct sockaddr_in *s = (struct sockaddr_in *)&addr;
-    inet_ntop(AF_INET, &s->sin_addr, ipstr, INET_ADDRSTRLEN);
-  }
-  else
-  { // AF_INET6
-    struct sockaddr_in6 *s = (struct sockaddr_in6 *)&addr;
-    inet_ntop(AF_INET6, &s->sin6_addr, ipstr, INET6_ADDRSTRLEN);
-  }
-  return 1;
-}
+///**
+//* This maybe the place where the plain IP address is formatted.
+//* commented out getpeername(); since we already have it in Server
+//* fd = newsockfd
+//* ipstr = points to the returned ip addr
+//*/
+//int get_ipstr_server(int fd, char *ipstr)
+//{
+//  socklen_t len;
+//  struct sockaddr_storage addr;
+//
+//  len = sizeof(struct sockaddr_storage);
+//  // int get_ipstr(int fd, char *ipstr) { ... }
+//  getpeername(fd, (struct sockaddr *)&addr, &len);
+//
+//  if (addr.ss_family == AF_INET)
+//  {
+//    struct sockaddr_in *s = (struct sockaddr_in *)&addr;
+//    inet_ntop(AF_INET, &s->sin_addr, ipstr, INET_ADDRSTRLEN);
+//  }
+//  else
+//  { // AF_INET6
+//    struct sockaddr_in6 *s = (struct sockaddr_in6 *)&addr;
+//    inet_ntop(AF_INET6, &s->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+//  }
+//  return 1;
+//}
 
 
 Server::Server(Configuration* configuration)
@@ -188,14 +189,14 @@ bool Server::run()
 			 * trying to single out ONE ip per connection in thread pool.
 			 * Putting inside mutex just incase.
 			 */
-			//get_ipstr_server(newsockfd, ipstr);
-			//compare_me = string(ipstr);
+			get_ipstr(newsockfd, ipstr);
+			compare_me = string(ipstr);
 			if( compare_me.compare(temp) != 0 )
 			{
-				get_ipstr_server(newsockfd, ipstr);
+				get_ipstr(newsockfd, ipstr);
 				temp = string(ipstr);
 				fprintf(stdout,"\nnew connection: %s",ipstr );
-				fprintf(stdout,"DEBUG: TID: %d #Connections: %d",choosen,threads[choosen].client_count);
+				fprintf(stdout,"\nDEBUG: TID: %d #Connections: %d",choosen,threads[choosen].client_count);
 
 				/**
 				 * immediate blacklisting can be done here
