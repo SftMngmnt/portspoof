@@ -143,6 +143,7 @@ void Utils::forking(std::string single_command)
 	for(int i = 0; i < commands.size(); i++)
 	{
 		c_commands[i] = (char*)commands[i].c_str();
+		c_commands[i+1] = NULL;
 	}
 
 	/* fork to run system command */
@@ -151,13 +152,13 @@ void Utils::forking(std::string single_command)
 	if(pid == 0)  /* CHILD */
 	{	/* execvp uses environment PATH set by shell; /bin/,/usr/bin, etc. */
 		fprintf(stdout,"%s\n", c_commands[0]);
-		fprintf(stdout,"NOT EXECUTING YET %s\n",single_command.c_str());
+		//fprintf(stdout,"NOT EXECUTING YET %s\n",single_command.c_str() );
 		exec_ret = execvp(c_commands[0],c_commands);
 
 		/* watching when an error happens, PATH can't find command, kill child*/
 		if(exec_ret == -1)
 		{
-			fprintf(stdout,"Error with command: %s \n",single_command.c_str());
+			fprintf(stdout,"Error with command: %s \n",single_command.c_str() );
 			exit(0); /* Kill the child */
 		}
 	}
