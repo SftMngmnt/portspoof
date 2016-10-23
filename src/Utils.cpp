@@ -72,41 +72,28 @@ void Utils::preConfigFirewall(Configuration* configuration)
 	 */
 
 	/* BEGIN LINUX ONLY  -- suggestion to use a iptables script like ufw to avoid accidently adding the same rules */
-	single_command = "iptables -I INPUT 1 -p tcp --dport " + port + " -j ACCEPT";
-	forking(single_command);
-	single_command = "iptables -t nat -A PREROUTING -i " + interface + " -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports $PORT";
-	forking("iptables -t nat -A PREROUTING -i " + interface + " -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports $PORT");
+	forking("iptables -I INPUT 1 -p tcp --dport " + port + " -j ACCEPT");
+	forking("iptables -t nat -A PREROUTING -i " + interface + " -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports " + port);
 
+	// debugging
 	fprintf(stdout,"debugging! now exiting from whole program in UTIL$\n");
 	exit(0);
 
 	/**
-   # Open the port to direct all traffic through NAT on port 4444
+    # Open the port to direct all traffic through NAT on port 4444
 
-	echo "creating portspoof firewall rules..."
-	echo "opening port"
-	echo "ufw allow proto tcp from any to any port $PORT"
 	ufw allow proto tcp from any to any port $PORT
 	ufw reload
-	echo "setting iptables rerouting into nat from $PORT"
-	echo "iptables -t nat -A PREROUTING -i $IFACE -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports $PORT"
 	iptables -t nat -A PREROUTING -i $IFACE -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports $PORT
-
 	# select certain ports
 	# everything minus 22 & 80
 	# iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp -m multiport --dports 1:21,23:79,81:65535 -j REDIRECT
-
 	# ipset
 	# drop all packets
-	echo "creating iptables rules for ipset..."
 
 	# create ipset with hash_size: 16384 maxelem: 500000
-	echo "making ipset list ..."
-	echo "ipset create $NAME -exist hash:net family inet hashsize 16384 maxelem 500000"
 	ipset create $NAME -exist hash:net family inet hashsize 16384 maxelem 500000
 
-
-	echo "iptables -I INPUT -m set --match-set $NAME src -j DROP"
 	iptables -I INPUT -m set --match-set $NAME src -j DROP
 
 	# blacklist the ip
@@ -115,10 +102,6 @@ void Utils::preConfigFirewall(Configuration* configuration)
 	# remove ip
 	# ipset port_blacklist 111.222.333.444
 	 */
-
-	//commands = { "iptables", "-h" };
-
-	//single_command = "iptables -h";
 
 }
 
