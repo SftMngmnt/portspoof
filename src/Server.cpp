@@ -177,7 +177,7 @@ int choosen;
         	{
         	    char ipstr[INET6_ADDRSTRLEN];
         		memset(ipstr, '\0', INET6_ADDRSTRLEN);
-        		get_ipstr_server(choosen, ipstr);
+        		get_ipstr_server(newsockfd, ipstr);
         		fprintf(stdout,"\nnew connection: %s",ipstr );
         	}
 
