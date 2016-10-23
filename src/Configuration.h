@@ -63,15 +63,21 @@
 #define OPT_RUN_AS_D 13
 /**
  * Automatic firewall configuration 
+ *  - flags for each option needed
+ *  	- interface to tell iptables
+ *  	- open port for iptables
+ *  	- blacklist name for ipset rules
  */
 #define OPT_FIREWALL_INTF 14
-#define OPT_FIREWALL_PRT 15
+#define BLACKLISTNAME "portspoof_blacklist"
 /**
  * Timed Blacklist setting
+ * 	flag for setting blacklisting to wait till all sig's sent
  */
 #define OPT_TIMER_BLK 16
 /**
  * Automatic Blacklist
+ *  flag to run blacklisting w/o any of the features of portspoof
  */
 #define OPT_AUTO_BLK 17
 
@@ -114,8 +120,9 @@ class Fuzzer;
 
 #include "Fuzzer.h"
 
-
 class Configuration {
+
+
 	private:
 		std::string configfile;
 		std::string signaturefile;
@@ -129,8 +136,7 @@ class Configuration {
 		 * for auto-iptables/ipset configuration
 		 **/
 		std::string interface;
-		int open_port_number;
-
+		// using this same port for the firewall config
 		unsigned short int port;
 		int thread_number;
 		bool fuzzing_mode;
@@ -161,13 +167,11 @@ class Configuration {
 		std::string getBindIP();
 		std::string getNmapfuzzSignaturesFile();
 		std::string getFuzzPayloadFile();
-		
 		/**
 		 * added getters for default
 		 * iptables configuration
 		 **/
 		std::string getInterface();
-		int getOpenPortNumber();
 
 		bool getConfigValue(int value);
 		unsigned short int getPort();

@@ -34,12 +34,181 @@
  */
 
  
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "Utils.h"
+using std::string;
 
 
 pthread_cond_t log_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+/**
+ * Run system commands such as making iptables i.e NAT rules,
+ * building ipset list, iptables DROP for ipset.
+ * @param option; if both options are sent in as parameters: port & network card
+ */
+void Utils::SystemCommands(Configuration* configuration)
+{
+	std::string interface = configuration->getInterface();
+	int port = configuration->getPort();
+	char *commands[CMNDS];
+	char *single_command = (char*) malloc( MAX_INPUT * sizeof(char) );
+	/**
+	 * START PORTSPOOF PROCESS
+	 * 1: Open firewall port
+	 * 	- if already open, leave alone
+	 * 	- else: reload firewall after new rule entered
+	 * 2: Iptables NAT
+	 *  - if already set check port number
+	 *  - else write rule
+	 * 3: ipset list create
+	 *  - if list exists leave alone
+	 *  - else: write
+	 */
+	/**
+   # Open the port to direct all traffic through NAT on port 4444
+
+	echo "creating portspoof firewall rules..."
+	echo "opening port"
+	echo "ufw allow proto tcp from any to any port $PORT"
+	ufw allow proto tcp from any to any port $PORT
+	ufw reload
+	echo "setting iptables rerouting into nat from $PORT"
+	echo "iptables -t nat -A PREROUTING -i $IFACE -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports $PORT"
+	iptables -t nat -A PREROUTING -i $IFACE -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports $PORT
+
+	# select certain ports
+	# everything minus 22 & 80
+	# iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp -m multiport --dports 1:21,23:79,81:65535 -j REDIRECT
+
+	# ipset
+	# drop all packets
+	echo "creating iptables rules for ipset..."
+
+	# create ipset with hash_size: 16384 maxelem: 500000
+	echo "making ipset list ..."
+	echo "ipset create $NAME -exist hash:net family inet hashsize 16384 maxelem 500000"
+	ipset create $NAME -exist hash:net family inet hashsize 16384 maxelem 500000
+
+
+	echo "iptables -I INPUT -m set --match-set $NAME src -j DROP"
+	iptables -I INPUT -m set --match-set $NAME src -j DROP
+
+	# blacklist the ip
+	# ipset add port_blacklist 111.222.333.444
+
+	# remove ip
+	# ipset port_blacklist 111.222.333.444
+	 */
+
+	//commands = { "iptables", "-h" };
+
+	single_command = "iptables -h";
+	commands = parseCommand(single_command);
+
+	forking(commands);
+	/* pRoCeSs cOmMaNdS eNd */
+
+	/* Clean up all the memory space */
+	//TODO
+
+}
+
+/**
+ * Parse a whole string into an array
+ */
+char* Utils::parseCommand(char *input)
+{
+	int i=0;
+	char *commands[CMNDS], *buffer;
+
+	/* make temporary space to tokenize commands with for copying out of input */
+	buffer = (char*) malloc( strlen(input) * sizeof(char) );
+
+	for(i = 0; i < CMNDS; i++)
+	{	/* restricting space that user can input, keep BO's out perhaps */
+		commands[i] = (char*)malloc(CMND_LEN * sizeof(char));
+		memset(commands[i],0, CMND_LEN);	/* set all memory to /0 */
+	}
+
+	i=0;
+	while( (buffer = strsep(&input, DELIM) ) != NULL)
+	{	/**
+		 * with strncmp... trying to prevent exit when over MAX_CMND "spaces"
+		 * entered but doesn't help.
+		 **/
+		if( (strlen(buffer) >= 1) && (strcmp(buffer," ")!=0) )
+		{	/* everything that is worthwhile to copy is in here or else is null */
+			commands[i] = strndup(buffer,CMND_LEN);	/* Restrict length of commands */
+			/* always add a NULL byte */
+			commands[i+1]='\0';
+			countD++;
+
+			if( strlen( commands[i] ) == 0)
+			{
+				commands[i]= NULL;
+			}
+			/* placing iterator here, ignores lots of potential problems with input */
+			i++;
+		}
+		else
+		{	/* without this no NULLs are in commands array and execvp will return error */
+			commands[i] = NULL;
+		}
+
+		if(i > MAX_CMND)
+		{	/**
+			 * More than MAX_CMND of delimiters have been entered and will
+			 * overwrite the stack; overwriting pflag from main() which will
+			 * exit the loop and kill the program.  For protection we need to
+			 * prevent that in a number of different ways. This way works a bit.
+			 **/
+			printf("More than %d, commands/arguments entered, ignored extra.\n",MAX_CMND);
+			input=NULL;
+		}
+	}
+	return commands;
+}
+
+/**
+ * handle forking out the individual system commands entirely on their own
+ */
+void Utils::forking(char* commands[CMNDS])
+{
+	/* fork to run system command */
+	pid_t pid = fork();
+	int status, exec_ret;
+
+	/* take over child with execvp */
+	if(pid == 0)  /* CHILD */
+	{	/* execvp uses environment PATH set by shell; /bin/,/usr/bin, etc. */
+		fprintf(stdout,"%s\n", commands[0]);
+		fprintf(stdout,"NOT EXECUTING YET %s %s %s %s\n",commands[0],commands[1],commands[2],commands[3]);
+		//exec_ret = execvp(commands[0],commands);
+
+		/* watching when an error happens, PATH can't find command, kill child*/
+		if(exec_ret == -1)
+		{
+			fprintf(stdout,"\n%s: Error with command.\n",commands[0]);
+			exit(0); /* Kill the child */
+		}
+	}
+
+	wait( &status ); /* wait on child/everyone before proceeding */
+	if (pid !=0)	/* PARENT */
+	{
+		fflush( NULL );
+	}
+
+	if(exec_ret == -1)
+	{
+		fprintf(stdout,"\n%s: Setup failed.\n",commands[0]);
+		fprintf(stdout,"-> check input and rerun\n");
+		exit(1);
+	}
+}
 
 
 void Utils::hexdump(void *mem, unsigned int len)
@@ -121,8 +290,8 @@ std::vector<char> Utils::str2vector( std::string& s)
 		
 	return result_vector;
 	
-	
 }
+
 int Utils::isNumeric (const char * s)
 {
     if (s == NULL || *s == '\0' || isspace(*s))

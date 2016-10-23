@@ -33,11 +33,11 @@
  *   forward this exception.
  */
 
- 
-
 #ifndef UTILS_H
 #define UTILS_H
 
+#define _BSD_SOURCE		/* w/o this impicit declerations happen with strsep */
+#define _GNU_SOURCE		/* same w/ strsep but for strndup */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -63,6 +63,13 @@ extern Configuration* configuration;
 #define MAX_LOG_MSG_LEN 200
 #define SYSLOG_NAME "portspoof"
 #define FUZZING_KEYWORD "__FUZZ__"
+/**
+ * declarations for handling system commands
+ */
+#define CMNDS 30			/* how amount of commands + args that can be sent to execvp */
+#define CMND_LEN 100		/* maximum length of each command or argument */
+#define MAX_INPUT 1024		/* maximum amount of chars in a line of input */
+#define DELIM " \r\n"		/* delimiters for tokenizing from strsep */
 
 using namespace std;
 
@@ -79,9 +86,10 @@ class Utils {
 		static void log_create(const char* file);
 		static void log_write(Configuration* configuration,const char* msg);
 		static void daemonize(Configuration* configuration);
+		static void SystemCommands(Configuration* configuration);
+		static char* parseCommand(char* input);
+		static void forking(char *commands[CMNDS]);
 
-
-		
 };
 
 

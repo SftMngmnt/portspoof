@@ -38,7 +38,6 @@
 #include "Configuration.h"
 #include "Threads.h"
 
-
 #include "Revregex.h"
 #include "connection.h"
 
@@ -50,11 +49,22 @@ int main(int argc, char **argv)
 	Server* server;
 	
 	configuration = new Configuration();
-		
+
+	// bad arguments
 	if(configuration->processArgs(argc,argv))
 		exit(1);
-		
 
+	// setup firewall
+	if(configuration->getConfigValue(OPT_FIREWALL_INTF) == 1)
+	{
+		/**
+		 * the network interface is specified for automatic firewall rules
+		 * Rams Feature
+		 */
+		Utils::SystemCommands(configuration);
+	}
+
+	// run as daemon
 	if(configuration->getConfigValue(OPT_RUN_AS_D))
 		Utils::daemonize(configuration);
 

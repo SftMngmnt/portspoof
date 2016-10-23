@@ -33,7 +33,6 @@
  *   forward this exception.
  */
 
- 
 
 #include "Configuration.h"
 
@@ -53,10 +52,13 @@ Configuration::Configuration()
 	thread_number=MAX_THREADS;
 	fuzzing_mode=0;
 
-
 	return;
 }
 
+
+/**
+ * config values:
+ */
 bool Configuration::getConfigValue(int value)
 {
 	return this->opts[value];
@@ -84,10 +86,10 @@ void  Configuration::usage(void)
 	  "-v			  be verbose\n"
 	  "-h			  display this help and exit\n"
 	  " New Features Added \n"
-	  "		-A		[interface] Automatically Configure Firewall Rules -- By: Ram\n"
-	  "		-P		[port number] Automatically Configure Firewall Rules -- By: Ram\n"
-	  "		-T		Blacklist Connecting IP -After- scanner recieves signatures -- By: Sunday\n"
-	  "		-B		Automatically blacklist any connecting IP (semi-honeypot funcationality) -- By: Kurt\n"
+	  "	-A		[interface] Automatically Configure Firewall Rules -- By: Ram\n"
+	  "	-p		[port number] Automatically Configure Firewall Rules uses same port as above  -- By: Ram (same -p) \n"
+	  "	-T		Blacklist Connecting IP -After- scanner receives signatures -- By: Sunday\n"
+	  "	-B		Automatically blacklist any connecting IP (semi-honeypot funcationality) -- By: Kurt\n"
 	  );
 	
 	exit(1);
@@ -103,24 +105,21 @@ bool Configuration::processArgs(int argc, char** argv)
 		case 'T':
 			// Blacklist 
 			this->opts[OPT_TIMER_BLK]=1;
+			fprintf(stdout,"-> starting disappearing honeypot");
 			fprintf(stdout,"-> Implemented with Blacklisting any IP that connects -After- spoofed signatures sent\n");
 			break;
 		case 'B':
 			// Blacklist -After- spoofed signature sent
 			this->opts[OPT_AUTO_BLK]=1;
-			fprintf(stdout,"-> Implemented with Blacklisting any IP that connects automatically\n");
+			fprintf(stdout,"-> starting stupid honeypot");
+			fprintf(stdout,"-> Implemented with Blacklisting any IP that connects automatically (skips over all other features)\n");
 			break;
 		case 'A':
 			// Firewall Configuration INTERFACE
 			this->interface = std::string(optarg);
 			this->opts[OPT_FIREWALL_INTF]=1;
 			fprintf(stdout,"-> Using automatic firewall setup interface: %s\n",this->interface.c_str() );
-			break;
-		case 'P':
-			// Firewall Configuration PORT
-			this->open_port_number = atoi(optarg);
-			this->opts[OPT_FIREWALL_PRT]=1;
-			fprintf(stdout,"-> Using automatic firewall port number: %i\n",this->open_port_number );
+			fprintf(stdout,"-> Using automatic firewall port number: %i\n", this->getPort() );
 			break;
 		// Original
 		case 'i':
@@ -164,7 +163,7 @@ bool Configuration::processArgs(int argc, char** argv)
 			this->fuzzpayload_file=std::string(optarg);
 			if(this->opts[OPT_FUZZ_INTERNAL])
 			{
-				fprintf(stdout,"Error: -1 flag cannot be used with -f \n\n", __progname);
+				fprintf(stdout,"Error: -1 flag cannot be used with -f\n\n", __progname );
 				exit(0);
 			}
 			fprintf(stdout,"-> Reading fuzzing payloads from a file %s!\n",this->fuzzpayload_file.c_str());
@@ -196,7 +195,6 @@ bool Configuration::processArgs(int argc, char** argv)
 			break;
 			}
 	}
-	
 
 	if(this->opts==0)
 	{
@@ -204,11 +202,11 @@ bool Configuration::processArgs(int argc, char** argv)
 	}
 			
 	if(this->getConfigValue(OPT_FUZZ_NMAP) ||this->getConfigValue(OPT_FUZZ_WORDLIST) || this->getConfigValue(OPT_FUZZ_INTERNAL))
-		{
+	{
 		this->fuzzer=new Fuzzer(this);
 		this->thread_number=1; //set thread count to 1 due to race conditions 
 		this->fuzzing_mode=1;
-		}
+	}
 
 	if(this->fuzzing_mode == 0)
 	{
@@ -223,19 +221,7 @@ bool Configuration::processArgs(int argc, char** argv)
 		exit(1);
 
 	}
-		/** Rams Feature
-		 * Before The program runs:
-		 * waitpid()
-		 * new fork()
-		 * {
-		 * 	KNOW TWO THINGS:
-		 * 	PARTA: 	INTEFACE: ens33 OR eth0
-		 *  PARTA:  PORT NUMBER: 4444 by default if not specified:
-		 *	execlp( iptables --open #port_number );
-		 *	wait();
-		 * 	execlp(iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports 4444)
-		 * 	}
-		 */
+
 
 	return 0;
 }
@@ -245,16 +231,11 @@ bool Configuration::processArgs(int argc, char** argv)
  *		std::string interface;
  *		int open_port_number;
  *
- **/
-
+ * option to set interface for firewall
+ */
 std::string Configuration::getInterface()
 {
 	return this->interface;
-}
-
-int Configuration::getOpenPortNumber()
-{
-	return this->open_port_number;
 }
 
 std::string Configuration::getConfigFile()
@@ -451,5 +432,3 @@ bool Configuration::readConfigFile()
 	return 0;
 	
 }
-
-//aram
