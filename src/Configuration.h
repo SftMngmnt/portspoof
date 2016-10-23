@@ -138,6 +138,9 @@ class Configuration {
 		std::string interface;
 		// using this same port for the firewall config
 		unsigned short int port;
+		std::string ipset_name;
+
+		// original
 		int thread_number;
 		bool fuzzing_mode;
 		bitset<20> opts;
@@ -172,6 +175,7 @@ class Configuration {
 		 * iptables configuration
 		 **/
 		std::string getInterface();
+		std::string getBlacklistName();
 
 		bool getConfigValue(int value);
 		unsigned short int getPort();

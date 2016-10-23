@@ -52,6 +52,8 @@ Configuration::Configuration()
 	thread_number=MAX_THREADS;
 	fuzzing_mode=0;
 
+	// ipset list name
+	ipset_name = std::string(BLACKLISTNAME);
 	return;
 }
 
@@ -236,6 +238,13 @@ bool Configuration::processArgs(int argc, char** argv)
 std::string Configuration::getInterface()
 {
 	return this->interface;
+}
+/**
+ * returns the name of the blacklist used for ipset
+ */
+std::string Configuration::getBlacklistName()
+{
+	return this->ipset_name;
 }
 
 std::string Configuration::getConfigFile()

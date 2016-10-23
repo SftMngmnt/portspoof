@@ -57,7 +57,8 @@ void Utils::preConfigFirewall(Configuration* configuration)
 {
 	std::string interface = configuration->getInterface();
 	std::string port =  std::to_string( configuration->getPort() );		// convert directly to string
-	std::string single_command;
+	std::string ipset_name = configuration->getBlacklistName();
+	//std::string single_command;
 	/**
 	 * START PORTSPOOF PROCESS
 	 * 1: Open firewall port
@@ -72,37 +73,24 @@ void Utils::preConfigFirewall(Configuration* configuration)
 	 */
 
 	/* BEGIN LINUX ONLY  -- suggestion to use a iptables script like ufw to avoid accidently adding the same rules */
+	// .= Portspoof Specific =.
+	// open the port
 	forking("iptables -I INPUT 1 -p tcp --dport " + port + " -j ACCEPT");
+	// REDIRECT to the port
+	// optional:
+	//		all ports except 22 & 80
+	//		 iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp -m multiport --dports 1:21,23:79,81:65535 -j REDIRECT
 	forking("iptables -t nat -A PREROUTING -i " + interface + " -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports " + port);
 
+	// .= Blacklisting Specific =.
+	// create ipset list with hash_size: 16384 maxelem: 500000
+	forking("ipset create " + ipset_name + " -exist hash:net family inet hashsize 16384 maxelem 500000");
+	// DROP all packets matching ipset list
+	forking("iptables -I INPUT -m set --match-set "+ ipset_name + " src -j DROP");
+
 	// debugging
-	fprintf(stdout,"debugging! now exiting from whole program in UTIL$\n");
-	exit(0);
-
-	/**
-    # Open the port to direct all traffic through NAT on port 4444
-
-	ufw allow proto tcp from any to any port $PORT
-	ufw reload
-	iptables -t nat -A PREROUTING -i $IFACE -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports $PORT
-	# select certain ports
-	# everything minus 22 & 80
-	# iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp -m multiport --dports 1:21,23:79,81:65535 -j REDIRECT
-	# ipset
-	# drop all packets
-
-	# create ipset with hash_size: 16384 maxelem: 500000
-	ipset create $NAME -exist hash:net family inet hashsize 16384 maxelem 500000
-
-	iptables -I INPUT -m set --match-set $NAME src -j DROP
-
-	# blacklist the ip
-	# ipset add port_blacklist 111.222.333.444
-
-	# remove ip
-	# ipset port_blacklist 111.222.333.444
-	 */
-
+	//fprintf(stdout,"debugging! now exiting from whole program in UTIL$\n");
+	//exit(0);
 }
 
 
