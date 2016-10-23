@@ -33,8 +33,10 @@
  *   forward this exception.
  */
 
+#include <string>
 
 #include "Server.h"
+using std::string;
 
 pthread_cond_t new_connection_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t new_connection_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -140,7 +142,8 @@ Server::Server(Configuration* configuration)
 bool Server::run()
 {
 
-	int choosen, flag=0, same_newsockfd, temp;
+	int choosen, flag=0, same_newsockfd;
+	string temp = "0.0.0.0", compare_me ;
 	char ipstr[INET6_ADDRSTRLEN];
 	memset(ipstr, '\0', INET6_ADDRSTRLEN);
 
@@ -150,24 +153,6 @@ bool Server::run()
 		/* wait for a connection */
 		addrlen = sizeof(peer_name);
 		newsockfd = accept(sockd, (struct sockaddr*)&peer_name,(socklen_t*) &addrlen);
-
-		/**
-		 * trying to single out ONE ip per connection in thread pool
-		 */
-		same_newsockfd = newsockfd;
-		if(same_newsockfd != temp)
-		{
-			flag = 0;
-		}
-
-		// simpler debug -v leads to a seg fault
-		if( flag != 1)
-		{
-			temp = newsockfd;		// only print one time per socket
-			get_ipstr_server(newsockfd, ipstr);
-			fprintf(stdout,"\nnew connection: %s",ipstr );
-			flag = 1;
-		}
 
 		if (newsockfd < 0)
 		{
@@ -180,6 +165,19 @@ bool Server::run()
 			start:
 
 			pthread_mutex_lock(&new_connection_mutex);
+			/**
+			 * trying to single out ONE ip per connection in thread pool.
+			 * Putting inside mutex just incase.
+			 */
+			get_ipstr_server(newsockfd, ipstr);
+			compare_me = string(ipstr);
+
+			if( compare_me.compare(temp) != 0 )
+			{
+				get_ipstr_server(newsockfd, ipstr);
+				temp = string(ipstr);
+				fprintf(stdout,"\nnew connection: %s",ipstr );
+			}
 
 			choosen=choose_thread();
 
