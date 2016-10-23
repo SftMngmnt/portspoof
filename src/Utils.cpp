@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <string>
 #include <iterator>
+#include <sstream>
 
 #include "Utils.h"
 using std::string;
@@ -55,7 +56,7 @@ pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 void Utils::preConfigFirewall(Configuration* configuration)
 {
 	std::string interface = configuration->getInterface();
-	int port = configuration->getPort();
+	std::string port =  std::to_string( configuration->getPort() );		// convert directly to string
 	std::string single_command;
 	/**
 	 * START PORTSPOOF PROCESS
@@ -73,7 +74,8 @@ void Utils::preConfigFirewall(Configuration* configuration)
 	/* BEGIN LINUX ONLY  -- suggestion to use a iptables script like ufw to avoid accidently adding the same rules */
 	single_command = "iptables -I INPUT 1 -p tcp --dport " + port + " -j ACCEPT";
 	forking(single_command);
-	forking("")
+	//forking("");
+
 	/**
    # Open the port to direct all traffic through NAT on port 4444
 
