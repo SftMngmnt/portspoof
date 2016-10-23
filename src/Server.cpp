@@ -74,7 +74,7 @@ Server::Server(Configuration* configuration)
 {	
 	this->configuration = configuration;
 
-	// !!!
+	// !!! All threds created Here //
 	/*  create thread pool */
 	for(int i = 0; i < this->configuration->getThreadNr(); i++)
 	{
@@ -86,12 +86,12 @@ Server::Server(Configuration* configuration)
 	sockd = socket(PF_INET, SOCK_STREAM, 0);
 	if (sockd == -1)
 	{
-	perror("Socket creation error");
-	exit(1);
+		perror("Socket creation error");
+		exit(1);
 	}
 
-	 int n = 1;
-	 setsockopt(sockd, SOL_SOCKET, SO_REUSEADDR , &n, sizeof(n));
+	int n = 1;
+	setsockopt(sockd, SOL_SOCKET, SO_REUSEADDR , &n, sizeof(n));
 
 	/* server address  - by default localhost */
 	my_name.sin_family = PF_INET;
@@ -127,18 +127,20 @@ Server::Server(Configuration* configuration)
 	status = listen(sockd, 10);
 	if (status == -1)
 	{
-	perror("Listen set error");
-	exit(1);
+		perror("Listen set error");
+		exit(1);
 	}
 
 	return;
 }
 
-
+/**
+ * Server waits for new connections, spawns threads --> process_connection
+ */
 bool Server::run()
 {
 
-	int choosen, flag=0;
+	int choosen, flag=0, same_newsockfd, temp;
 	char ipstr[INET6_ADDRSTRLEN];
 	memset(ipstr, '\0', INET6_ADDRSTRLEN);
 
@@ -149,26 +151,33 @@ bool Server::run()
 		addrlen = sizeof(peer_name);
 		newsockfd = accept(sockd, (struct sockaddr*)&peer_name,(socklen_t*) &addrlen);
 
+		/**
+		 * trying to single out ONE ip per connection in thread pool
+		 */
+		same_newsockfd = newsockfd;
+		if(same_newsockfd != temp)
+		{
+			flag = 0;
+		}
+
+		// simpler debug -v leads to a seg fault
+		if( flag != 1)
+		{
+			temp = newsockfd;		// only print one time per socket
+			get_ipstr_server(newsockfd, ipstr);
+			fprintf(stdout,"\nnew connection: %s",ipstr );
+			flag = 1;
+		}
+
 		if (newsockfd < 0)
 		{
 			perror("ERROR on accept");
 		}
-
-		/**
-		 * new connection starts here
-		 */
-		else{
-
+		else
+		{
 			nonblock(newsockfd);
 
 			start:
-			// simpler debug -v leads to a seg fault
-			if( flag != 1)
-			{
-				get_ipstr_server(newsockfd, ipstr);
-				fprintf(stdout,"\nnew connection: %s",ipstr );
-				flag = 1;
-			}
 
 			pthread_mutex_lock(&new_connection_mutex);
 
@@ -198,8 +207,9 @@ bool Server::run()
 					break;
 				}
 			}
+
 			pthread_mutex_unlock(&new_connection_mutex);
-			}
+		}
 	}
 
 return 0;
