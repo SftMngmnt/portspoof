@@ -177,8 +177,8 @@ int choosen;
         	{
         	    char ipstr[INET6_ADDRSTRLEN];
         		memset(ipstr, '\0', INET6_ADDRSTRLEN);
-        		get_ipstr(ipstr);
-        		fprintf(stdout,"new connection: %s",ipstr );
+        		get_ipstr(choosen, ipstr);
+        		fprintf(stdout,"\nnew connection: %s",ipstr );
         	}
 
         	// all the threads starting
