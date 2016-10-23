@@ -44,6 +44,8 @@ Thread threads[MAX_THREADS];
 /**
 * This maybe the place where the plain IP address is formatted.
 * commented out getpeername(); since we already have it in Server
+* fd = newsockfd
+* ipstr = points to the returned ip addr
 */
 int get_ipstr_server(int fd, char *ipstr)
 {
@@ -70,9 +72,19 @@ int get_ipstr_server(int fd, char *ipstr)
 
 Server::Server(Configuration* configuration)
 {	
+	// simpler debug -v leads to a seg fault
+	if(true)
+	{
+		char ipstr[INET6_ADDRSTRLEN];
+		memset(ipstr, '\0', INET6_ADDRSTRLEN);
+		get_ipstr_server(newsockfd, ipstr);
+		fprintf(stdout,"\nnew connection: %s",ipstr );
+	}
+
 	this->configuration = configuration;
 
-	/* create thread pool */
+	// !!!
+	/*  create thread pool */
 	for(int i = 0; i < this->configuration->getThreadNr(); i++)
 	{
 		pthread_create(&threads[i].tid, NULL, &process_connection, (void *) i);
@@ -108,13 +120,16 @@ Server::Server(Configuration* configuration)
 
 	}
 	else
-	my_name.sin_port = htons(DEFAULT_PORT);
+	{
+		my_name.sin_port = htons(DEFAULT_PORT);
+	}
 
 	status = bind(sockd, (struct sockaddr*)&my_name, sizeof(my_name));
+
 	if (status == -1)
 	{
-	perror("Binding error");
-	exit(1);
+		perror("Binding error");
+		exit(1);
 	}
 
 	// Set queue sizeof
@@ -172,16 +187,7 @@ int choosen;
 				fflush(stdout);
 			}
 			
-        	// simpler debug -v leads to a seg fault
-        	if(true)
-        	{
-        	    char ipstr[INET6_ADDRSTRLEN];
-        		memset(ipstr, '\0', INET6_ADDRSTRLEN);
-        		get_ipstr_server(newsockfd, ipstr);
-        		fprintf(stdout,"\nnew connection: %s",ipstr );
-        	}
 
-        	// all the threads starting
 			for(int i = 0; i < MAX_CLIENT_PER_THREAD; i++)
 			{
 				if(threads[choosen].clients[i] == 0)
