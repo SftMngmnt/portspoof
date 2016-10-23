@@ -138,55 +138,56 @@ Server::Server(Configuration* configuration)
 bool Server::run()
 {
 
-int choosen;
+	int choosen, flag;
+	char ipstr[INET6_ADDRSTRLEN];
+	memset(ipstr, '\0', INET6_ADDRSTRLEN);
 
-	  while(1)
-	  { 
-	    /* wait for a connection */
-	    addrlen = sizeof(peer_name);
-	    newsockfd = accept(sockd, (struct sockaddr*)&peer_name,(socklen_t*) &addrlen);
-		
-		
-        if (newsockfd < 0)
-        {
-        	perror("ERROR on accept");
-        }
+	while(1)
+	{
 
-        /**
-         * new connection starts here
-         */
-        else{
+		/* wait for a connection */
+		addrlen = sizeof(peer_name);
+		newsockfd = accept(sockd, (struct sockaddr*)&peer_name,(socklen_t*) &addrlen);
+		flag = 0;
+		if (newsockfd < 0)
+		{
+			perror("ERROR on accept");
+		}
 
-			nonblock(newsockfd); 
+		/**
+		 * new connection starts here
+		 */
+		else{
+
+			nonblock(newsockfd);
+
+			start:
+			pthread_mutex_lock(&new_connection_mutex);
 
 			// simpler debug -v leads to a seg fault
-			if(true)
+			if( flag != 1)
 			{
-				char ipstr[INET6_ADDRSTRLEN];
-				memset(ipstr, '\0', INET6_ADDRSTRLEN);
 				get_ipstr_server(newsockfd, ipstr);
 				fprintf(stdout,"\nnew connection: %s",ipstr );
+				flag = 1;
 			}
-	    	
-			start:
-            pthread_mutex_lock(&new_connection_mutex);
+
 			choosen=choose_thread();
 
-
-	    	if( choosen == -1)
+			if( choosen == -1)
 			{
 				pthread_mutex_unlock(&new_connection_mutex);
 				sleep(1);
 				goto start;
 			}
-						
+
 
 			if(configuration->getConfigValue(OPT_DEBUG))
 			{
 				fprintf(stdout," new conn - thread choosen: %d -  nr. of connections already in queue: %d\n",choosen,threads[choosen].client_count);
 				fflush(stdout);
 			}
-			
+
 
 			for(int i = 0; i < MAX_CLIENT_PER_THREAD; i++)
 			{
@@ -199,7 +200,7 @@ int choosen;
 			}
 			pthread_mutex_unlock(&new_connection_mutex);
 			}
-	  }
+	}
 
 return 0;
 
