@@ -41,13 +41,32 @@ pthread_mutex_t new_connection_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 Thread threads[MAX_THREADS];
 
-/*
-# blacklist the ip
-# ipset add port_blacklist 111.222.333.444
+/**
+* This maybe the place where the plain IP address is formatted.
+* commented out getpeername(); since we already have it in Server
+*/
+int get_ipstr(char *ipstr)
+{
+  socklen_t len;
+  struct sockaddr_storage addr;
 
-# remove ip
-# ipset port_blacklist 111.222.333.444
- */
+  len = sizeof(struct sockaddr_storage);
+  // int get_ipstr(int fd, char *ipstr) { ... }
+  //getpeername(fd, (struct sockaddr *)&addr, &len);
+
+  if (addr.ss_family == AF_INET)
+  {
+    struct sockaddr_in *s = (struct sockaddr_in *)&addr;
+    inet_ntop(AF_INET, &s->sin_addr, ipstr, INET_ADDRSTRLEN);
+  }
+  else
+  { // AF_INET6
+    struct sockaddr_in6 *s = (struct sockaddr_in6 *)&addr;
+    inet_ntop(AF_INET6, &s->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+  }
+  return 1;
+}
+
 
 Server::Server(Configuration* configuration)
 {	
@@ -72,39 +91,39 @@ Server::Server(Configuration* configuration)
 	 setsockopt(sockd, SOL_SOCKET, SO_REUSEADDR , &n, sizeof(n));
 
 	/* server address  - by default localhost */
-	  my_name.sin_family = PF_INET;
-	  if(configuration->getConfigValue(OPT_IP))
-	   {
-			fprintf(stdout,"-> Binding to iface: %s\n",configuration->getBindIP().c_str());
-			inet_aton(configuration->getBindIP().c_str(), &my_name.sin_addr);
-		 
-		}
-	  else
-		my_name.sin_addr.s_addr = INADDR_ANY; 
-	  
-	  if(configuration->getConfigValue(OPT_PORT))
-		{
-			fprintf(stdout,"-> Binding to port: %d\n",configuration->getPort());
-			my_name.sin_port = htons(configuration->getPort());
-			
-		}
-	  else 
-	  my_name.sin_port = htons(DEFAULT_PORT);
+	my_name.sin_family = PF_INET;
+	if(configuration->getConfigValue(OPT_IP))
+	{
+		fprintf(stdout,"-> Binding to iface: %s\n",configuration->getBindIP().c_str());
+		inet_aton(configuration->getBindIP().c_str(), &my_name.sin_addr);
 
-	  status = bind(sockd, (struct sockaddr*)&my_name, sizeof(my_name));
-	  if (status == -1)
-	  {
-	    perror("Binding error");
-	    exit(1);
-	  }
+	}
+	else
+	my_name.sin_addr.s_addr = INADDR_ANY;
 
-	  // Set queue sizeof
-	  status = listen(sockd, 10);
-	  if (status == -1)
-	  {
-	    perror("Listen set error");
-	    exit(1);
-	  }
+	if(configuration->getConfigValue(OPT_PORT))
+	{
+		fprintf(stdout,"-> Binding to port: %d\n",configuration->getPort());
+		my_name.sin_port = htons(configuration->getPort());
+
+	}
+	else
+	my_name.sin_port = htons(DEFAULT_PORT);
+
+	status = bind(sockd, (struct sockaddr*)&my_name, sizeof(my_name));
+	if (status == -1)
+	{
+	perror("Binding error");
+	exit(1);
+	}
+
+	// Set queue sizeof
+	status = listen(sockd, 10);
+	if (status == -1)
+	{
+	perror("Listen set error");
+	exit(1);
+	}
 
 	return;
 }
@@ -123,9 +142,15 @@ int choosen;
 		
 		
         if (newsockfd < 0)
-	    perror("ERROR on accept");
-	    else{
-		
+        {
+        	perror("ERROR on accept");
+        }
+
+        /**
+         * new connection starts here
+         */
+        else{
+
 			nonblock(newsockfd); 
 	    	
 			start:
@@ -134,17 +159,29 @@ int choosen;
 
 
 	    	if( choosen == -1)
-				{
-					pthread_mutex_unlock(&new_connection_mutex);
-					sleep(1);
-					goto start;
-				}
+			{
+				pthread_mutex_unlock(&new_connection_mutex);
+				sleep(1);
+				goto start;
+			}
 						
 
 			if(configuration->getConfigValue(OPT_DEBUG))
-            fprintf(stdout," new conn - thread choosen: %d -  nr. of connections already in queue: %d\n",choosen,threads[choosen].client_count);
-			fflush(stdout);
+			{
+				fprintf(stdout," new conn - thread choosen: %d -  nr. of connections already in queue: %d\n",choosen,threads[choosen].client_count);
+				fflush(stdout);
+			}
 			
+        	// simpler debug -v leads to a seg fault
+        	if(true)
+        	{
+        	    char ipstr[INET6_ADDRSTRLEN];
+        		memset(ipstr, '\0', INET6_ADDRSTRLEN);
+        		get_ipstr(ipstr);
+        		fprintf(stdout,"new connection: %s",ipstr );
+        	}
+
+        	// all the threads starting
 			for(int i = 0; i < MAX_CLIENT_PER_THREAD; i++)
 			{
 				if(threads[choosen].clients[i] == 0)
@@ -154,10 +191,8 @@ int choosen;
 					break;
 				}
 			}
-	     pthread_mutex_unlock(&new_connection_mutex);
+			pthread_mutex_unlock(&new_connection_mutex);
 			}
-			
-	    
 	  }
 
 return 0;
