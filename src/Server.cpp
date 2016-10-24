@@ -145,10 +145,7 @@ Server::Server(Configuration* configuration)
 bool Server::run()
 {
 
-	int choosen, flag=0, same_newsockfd;
-	string temp = "0.0.0.0", compare_me ;
-	char ipstr[INET6_ADDRSTRLEN];
-	memset(ipstr, '\0', INET6_ADDRSTRLEN);
+	int choosen;
 
 	while(1)
 	{
@@ -185,26 +182,6 @@ bool Server::run()
 				fflush(stdout);
 			}
 
-			/**
-			 * trying to single out ONE ip per connection in thread pool.
-			 * Putting inside mutex just incase.
-			 */
-			get_ipstr(newsockfd, ipstr);
-			compare_me = string(ipstr);
-			if( compare_me.compare(temp) != 0 )
-			{
-				get_ipstr(newsockfd, ipstr);
-				temp = string(ipstr);
-				fprintf(stdout,"\nnew connection: %s",ipstr );
-				fprintf(stdout,"\nDEBUG: TID: %d #Connections: %d",choosen,threads[choosen].client_count);
-
-				/**
-				 * immediate blacklisting can be done here
-				 * sending ip directly into ipset would be sufficient?
-				 * threads would still be running but this maybe not the most sufficient spot
-				 */
-				Utils::forking("echo sending in ipset add " + temp);
-			}
 
 			for(int i = 0; i < MAX_CLIENT_PER_THREAD; i++)
 			{
