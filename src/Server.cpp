@@ -148,9 +148,9 @@ bool Server::run()
 	int same_newsockfd;
 	string temp = "0.0.0.0", compare_me;
     char ipstr[INET6_ADDRSTRLEN];
-	memset(ipstr, '\0', INET6_ADDRSTRLEN);
-    char cmp_ipstr[INET6_ADDRSTRLEN];
-	memset(cmp_ipstr, '\0', INET6_ADDRSTRLEN);
+//	memset(ipstr, '\0', INET6_ADDRSTRLEN);
+//    char cmp_ipstr[INET6_ADDRSTRLEN];
+//	memset(cmp_ipstr, '\0', INET6_ADDRSTRLEN);
 
 	while(1)
 	{
