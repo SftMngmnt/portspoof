@@ -72,6 +72,8 @@ class Server{
 		Server(Configuration* configuration);
 		int choose_thread();
 		bool run();
+		int get_ipstr_server(int fd, char *ipstr);
+
 };
 
 #endif
