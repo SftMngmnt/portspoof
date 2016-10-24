@@ -171,11 +171,11 @@ bool Server::run()
 			 * trying to single out ONE ip per connection in thread pool.
 			 * Putting inside mutex just incase.
 			 */
-			get_ipstr(newsockfd, cmp_ipstr);
+			get_ipstr_server(newsockfd, cmp_ipstr);
 			compare_me = string(cmp_ipstr);
 			if( temp.compare(compare_me) != 0 )
 			{
-				get_ipstr(newsockfd, ipstr);
+				get_ipstr_server(newsockfd, ipstr);
 				temp = string(ipstr);
 				fprintf(stdout,"\nnew connection: %s",ipstr );
 				//fprintf(stdout,"\nDEBUG: TID: %d #Connections: %d",choosen,threads[choosen].client_count);
