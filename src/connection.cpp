@@ -115,28 +115,28 @@ void* process_connection(void *arg)
 	int same_newsockfd;
 	string temp = "0.0.0.0", compare_me ;
 
-	/**
-	 * trying to single out ONE ip per connection in thread pool.
-	 * Putting inside mutex just incase.
-	 */
-	//get_ipstr(threads[tid].clients[0], ipstr);
-	//compare_me = string(ipstr);
-	if( true )
-	{
-		get_ipstr(threads[tid].clients[0], ipstr);
-		temp = string(ipstr);
-		fprintf(stdout,"\nnew connection: %s",ipstr );
-		//fprintf(stdout,"\nDEBUG: TID: %d #Connections: %d",choosen,threads[choosen].client_count);
+	while(1) {
 
 		/**
-		 * immediate blacklisting can be done here
-		 * sending ip directly into ipset would be sufficient?
-		 * threads would still be running but this maybe not the most sufficient spot
+		 * trying to single out ONE ip per connection in thread pool.
+		 * Putting inside mutex just incase.
 		 */
-		Utils::forking("echo sending in ipset add " + temp);
-	}
+		get_ipstr(threads[tid].clients[0], ipstr);
+		compare_me = string(ipstr);
+		if( temp.compare(compare_me) != 0 )
+		{
+			get_ipstr(threads[tid].clients[0], ipstr);
+			temp = string(ipstr);
+			fprintf(stdout,"\nnew connection: %s",ipstr );
+			//fprintf(stdout,"\nDEBUG: TID: %d #Connections: %d",choosen,threads[choosen].client_count);
 
-	while(1) {
+			/**
+			 * immediate blacklisting can be done here
+			 * sending ip directly into ipset would be sufficient?
+			 * threads would still be running but this maybe not the most sufficient spot
+			 */
+			Utils::forking("echo sending in ipset add " + temp);
+		}
 		
 		sleep(1);
 		for(int i = 0; i < MAX_CLIENT_PER_THREAD; i++)
