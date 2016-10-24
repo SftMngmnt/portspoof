@@ -125,7 +125,7 @@ void Utils::forking(std::string single_command)
 	/* take over child with execvp */
 	if(pid == 0)  /* CHILD */
 	{	/* execvp uses environment PATH set by shell; /bin/,/usr/bin, etc. */
-		fprintf(stdout,"-> %s\n", single_command.c_str());
+		fprintf(stdout,"\n-> %s\n", single_command.c_str());
 		//fprintf(stdout,"NOT EXECUTING YET %s\n",single_command.c_str() );
 		exec_ret = execvp(c_commands[0],c_commands);
 
