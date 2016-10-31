@@ -88,10 +88,10 @@ void  Configuration::usage(void)
 	  "-v			  be verbose\n"
 	  "-h			  display this help and exit\n"
 	  " New Features Added \n"
-	  "	-A		[interface] Automatically Configure Firewall Rules -- By: Ram\n"
-	  "	-p		[port number] Automatically Configure Firewall Rules uses same port as above  -- By: Ram (same -p) \n"
-	  "	-T		Blacklist Connecting IP -After- scanner receives signatures -- By: Sunday\n"
-	  "	-B		Automatically blacklist any connecting IP (semi-honeypot funcationality) -- By: Kurt\n"
+	  "-A		[interface] Automatically Configure Firewall Rules -- By: Ram\n"
+	  "-p		[port number] Automatically Configure Firewall Rules uses same port as above  -- By: Ram (same -p) \n"
+	  "-T		Blacklist Connecting IP -After- scanner receives signatures -- By: Sunday\n"
+	  "-B		Automatically blacklist any connecting IP (semi-honeypot funcationality) -- By: Kurt\n"
 	  );
 	
 	exit(1);
@@ -348,14 +348,14 @@ bool Configuration::processSignatureFile()
 	
 	fclose(fp);
 	
-				  // set  random mapping
-				  srand((unsigned)time(0)); 	
-				  for(int i=0;i<=MAX_PORTS;i++)
-					{
-					portsignatureemap.insert(make_pair(i,process_signature(rawsignatures[rand()%rawsignatures.size()])));
-					//portsignatureemap.insert(make_pair(i,process_signature(rawsignatures[i%rawsignatures.size()])));
-			
-					}
+	// set  random mapping
+	srand((unsigned)time(0));
+	for(int i=0;i<=MAX_PORTS;i++)
+	{
+	portsignatureemap.insert(make_pair(i,process_signature(rawsignatures[rand()%rawsignatures.size()])));
+	//portsignatureemap.insert(make_pair(i,process_signature(rawsignatures[i%rawsignatures.size()])));
+
+	}
 					
 
 	return 0;
