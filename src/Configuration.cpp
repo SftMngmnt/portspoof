@@ -91,7 +91,7 @@ void  Configuration::usage(void)
 	  "-A		[interface] Automatically Configure Firewall Rules -- By: Ram\n"
 	  "-p		[port number] Automatically Configure Firewall Rules uses same port as above  -- By: Ram (same -p) \n"
 	  "-T		Blacklist Connecting IP -After- scanner receives signatures -- By: Sunday\n"
-	  "-B		Automatically blacklist any connecting IP (semi-honeypot funcationality) -- By: Kurt\n"
+	  "-B		Automatically blacklist any connecting IP (semi-honeypot functionality) -- By: Kurt\n"
 	  );
 	
 	exit(1);
