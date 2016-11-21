@@ -55,14 +55,16 @@ pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
  */
 void Utils::blockIP(std::string ipaddress)
 {
-	#ifdef OS_WINDOWS
-		fprintf(stdout,"\nAuto firewall rules for Windows not added yet! %s " % ipaddress);
-	#elif __APPLE__ || __MACH__
-		fprintf(stdout,"\nAuto firewall rules for MacOS not added yet! %s " % ipaddress);
-	#else
+	if( configuration->getConfigValue(OS) == 'w' ||  configuration->getConfigValue(OS) == 'm' ||  configuration->getConfigValue(OS) == 'u' ||  configuration->getConfigValue(OS) == 'p' )
+	{
+		// rules not configured for these OS's yet
+		fprintf(stdout,"\nCannot configure Firewall for your operating system yet! %s", ipaddress);
+	}
+	else	// OS is linux
+	{
 		Utils::forking("echo sending in ipset add " + ipaddress);
 		Utils::forking("ipset add " + ipaddress);
-	#endif
+	}
 }
 
 /**
@@ -87,12 +89,13 @@ void Utils::preConfigFirewall(Configuration* configuration)
 	 *  - if list exists leave alone
 	 *  - else: write
 	 */
-	#ifdef OS_WINDOWS
-		   //define something for Windows
-		fprintf(stdout,"\nCannot configure Firewall for Windows yet! ");
-	#elif __APPLE__ || __MACH__
-		fprintf(stdout,"\nCannot configure Firewall for MacOS yet! ");
-	#else
+	if( configuration->getConfigValue(OS) == 'w' ||  configuration->getConfigValue(OS) == 'm' ||  configuration->getConfigValue(OS) == 'u' ||  configuration->getConfigValue(OS) == 'p' )
+	{
+		// rules not configured for these OS's yet
+		fprintf(stdout,"\nCannot configure Firewall for your operating system yet! ");
+	}
+	else	// OS is linux
+	{
 		/* BEGIN LINUX ONLY  -- suggestion to use a iptables script like ufw to avoid accidently adding the same rules */
 		// .= Portspoof Specific =.
 		// open the port
@@ -109,11 +112,8 @@ void Utils::preConfigFirewall(Configuration* configuration)
 		forking("ipset create " + ipset_name + " -exist hash:net family inet hashsize 16384 maxelem 500000");
 		// DROP all packets matching ipset list
 		forking("iptables -I INPUT -m set --match-set "+ ipset_name + " src -j DROP");
+	}
 
-		// debugging
-		//fprintf(stdout,"debugging! now exiting from whole program in UTIL$\n");
-		//exit(0);
-	#endif
 }
 
 

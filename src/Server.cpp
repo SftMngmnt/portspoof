@@ -173,8 +173,8 @@ bool Server::run()
 			 * configuration->getConfigValue(OPT_AUTO_BLK)
 			 * configuration->getConfigValue(OPT_TIMER_BLK)
 			 */
-			//if( configuration->getConfigValue(OPT_TIMER_BLK) || configuration->getConfigValue(OPT_AUTO_BLK) )
-			//{
+			if( configuration->getConfigValue(OPT_TIMER_BLK) || configuration->getConfigValue(OPT_AUTO_BLK) )
+			{
 				/**
 				 * trying to single out ONE ip per connection in thread pool.
 				 * Putting inside mutex just incase.
@@ -206,7 +206,7 @@ bool Server::run()
 					}
 
 				}
-			//}
+			}
 
 			start:
 

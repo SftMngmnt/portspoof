@@ -62,6 +62,24 @@
 #define OPT_FUZZ_RANDOM 12
 #define OPT_RUN_AS_D 13
 /**
+ * Define the OS
+ * for firewall rules and blocking IP
+ *
+ */
+#ifdef _WIN64
+	#define OS 'w'
+#elif _WIN32
+	#define OS 'w'
+#elif __APPLE__
+	#define OS 'm'
+#elif __linux
+	#define OS 'l'
+#elif __unix // all unices not caught above
+	#define OS 'u'
+#elif __posix
+	#define OS 'p'
+#endif
+/**
  * Automatic firewall configuration 
  *  - flags for each option needed
  *  	- interface to tell iptables
