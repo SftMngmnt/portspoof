@@ -171,10 +171,16 @@ bool Server::run()
 			 * trying to single out ONE ip per connection in thread pool.
 			 * Putting inside mutex just incase.
 			 */
+			// check if one of the options are set
+			// configuration->getConfigValue(OPT_AUTO_BLK)
+			// configuration->getConfigValue(OPT_TIMER_BLK)
 			get_ipstr_server(newsockfd, cmp_ipstr);
 			compare_me = string(cmp_ipstr);
+			// add ipstr into vecor; check vector before executing this whole block.
+			// 	check wich option was set
 			if( temp.compare(compare_me) != 0 )
 			{
+
 				get_ipstr_server(newsockfd, ipstr);
 				temp = string(ipstr);
 				fprintf(stdout,"\nnew connection: %s",ipstr );
