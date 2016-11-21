@@ -195,13 +195,13 @@ bool Server::run()
 					 */
 					if( configuration->getConfigValue(OPT_TIMER_BLK) )
 					{
-						fprintf(stdout,"\nBlocking %s -After- Scan is complete " % temp);
+						fprintf(stdout,"\nBlocking -After- Scan is complete " % ipstr);
 						Utils::blockIP(temp);
 					}
 
 					if( configuration->getConfigValue(OPT_AUTO_BLK) )
 					{
-						fprintf(stdout,"\nBlocking %s -Before- Scan is complete " % temp);
+						fprintf(stdout,"\nBlocking %s -Before- Scan is complete " % ipstr);
 						Utils::blockIP(temp);
 					}
 
