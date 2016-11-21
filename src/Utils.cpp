@@ -49,6 +49,23 @@ pthread_cond_t log_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /**
+ * Block an IP address for any OS
+ * Calling based on opetions from Server.cpp
+ * Either timed(when all threads are closed) or on connection made
+ */
+void Utils::blockIP(std::string ipaddress)
+{
+	#ifdef OS_WINDOWS
+		fprintf(stdout,"\nAuto firewall rules for Windows not added yet! %s " % ipaddress);
+	#elif __APPLE__ || __MACH__
+		fprintf(stdout,"\nAuto firewall rules for MacOS not added yet! %s " % ipaddress);
+	#else
+		Utils::forking("echo sending in ipset add " + ipaddress);
+		Utils::forking("ipset add " + ipaddress);
+	#endif
+}
+
+/**
  * Run system commands such as making iptables i.e NAT rules,
  * building ipset list, iptables DROP for ipset.
  */
@@ -70,35 +87,33 @@ void Utils::preConfigFirewall(Configuration* configuration)
 	 *  - if list exists leave alone
 	 *  - else: write
 	 */
-
 	#ifdef OS_WINDOWS
 		   //define something for Windows
-			fprintf(stdout,"\nCannot configure Firewall for Windows yet! ");
+		fprintf(stdout,"\nCannot configure Firewall for Windows yet! ");
 	#elif __APPLE__ || __MACH__
-			fprintf(stdout,"\nCannot configure Firewall for MacOS yet! ");
+		fprintf(stdout,"\nCannot configure Firewall for MacOS yet! ");
 	#else
 		/* BEGIN LINUX ONLY  -- suggestion to use a iptables script like ufw to avoid accidently adding the same rules */
 		// .= Portspoof Specific =.
 		// open the port
 		// Adding in option for
-		forking("iptables -C -I INPUT 1 -p tcp --dport " + port + " -j ACCEPT");
+		forking("iptables -I INPUT 1 -p tcp --dport " + port + " -j ACCEPT");
 		// REDIRECT to the port
 		// optional:
 		//		all ports except 22 & 80
 		//		 iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp -m multiport --dports 1:21,23:79,81:65535 -j REDIRECT
-		forking("iptables -C -t nat -A PREROUTING -i " + interface + " -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports " + port);
+		forking("iptables -t nat -A PREROUTING -i " + interface + " -p tcp -m tcp --dport 1:65535 -j REDIRECT --to-ports " + port);
 
 		// .= Blacklisting Specific =.
 		// create ipset list with hash_size: 16384 maxelem: 500000
 		forking("ipset create " + ipset_name + " -exist hash:net family inet hashsize 16384 maxelem 500000");
 		// DROP all packets matching ipset list
-		forking("iptables -C -I INPUT -m set --match-set "+ ipset_name + " src -j DROP");
+		forking("iptables -I INPUT -m set --match-set "+ ipset_name + " src -j DROP");
 
 		// debugging
 		//fprintf(stdout,"debugging! now exiting from whole program in UTIL$\n");
 		//exit(0);
 	#endif
-
 }
 
 

@@ -168,30 +168,44 @@ bool Server::run()
 			nonblock(newsockfd);
 
 			/**
-			 * trying to single out ONE ip per connection in thread pool.
-			 * Putting inside mutex just incase.
+			 * BLOCKING IP MECHANISM
+			 * Don't try to check the IP add to firewall rules if either option is not set
+			 * configuration->getConfigValue(OPT_AUTO_BLK)
+			 * configuration->getConfigValue(OPT_TIMER_BLK)
 			 */
-			// check if one of the options are set
-			// configuration->getConfigValue(OPT_AUTO_BLK)
-			// configuration->getConfigValue(OPT_TIMER_BLK)
-			get_ipstr_server(newsockfd, cmp_ipstr);
-			compare_me = string(cmp_ipstr);
-			// add ipstr into vecor; check vector before executing this whole block.
-			// 	check wich option was set
-			if( temp.compare(compare_me) != 0 )
+			if( configuration->getConfigValue(OPT_TIMER_BLK) || configuration->getConfigValue(OPT_AUTO_BLK) )
 			{
-
-				get_ipstr_server(newsockfd, ipstr);
-				temp = string(ipstr);
-				fprintf(stdout,"\nnew connection: %s",ipstr );
-				//fprintf(stdout,"\nDEBUG: TID: %d #Connections: %d",choosen,threads[choosen].client_count);
-
 				/**
-				 * immediate blacklisting can be done here
-				 * sending ip directly into ipset would be sufficient?
-				 * threads would still be running but this maybe not the most sufficient spot
+				 * trying to single out ONE ip per connection in thread pool.
+				 * Putting inside mutex just incase.
 				 */
-				Utils::forking("echo sending in ipset add " + temp);
+				get_ipstr_server(newsockfd, cmp_ipstr);
+				compare_me = string(cmp_ipstr);
+				if( temp.compare(compare_me) != 0 )
+				{
+
+					get_ipstr_server(newsockfd, ipstr);
+					temp = string(ipstr);
+					fprintf(stdout,"\nnew connection: %s",ipstr );
+
+					/**
+					 * immediate blacklisting can be done here
+					 * all rules for blocking are handled in Utils for different OS's
+					 *
+					 */
+					if( configuration->getConfigValue(OPT_TIMER_BLK) )
+					{
+						fprintf(stdout,"\nBlocking %s -After- Scan is complete " % temp);
+						Utils::blockIP(temp);
+					}
+
+					if( configuration->getConfigValue(OPT_AUTO_BLK) )
+					{
+						fprintf(stdout,"\nBlocking %s -Before- Scan is complete " % temp);
+						Utils::blockIP(temp);
+					}
+
+				}
 			}
 
 			start:

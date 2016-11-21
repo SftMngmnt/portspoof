@@ -51,21 +51,36 @@ int main(int argc, char **argv)
 	configuration = new Configuration();
 
 	// bad arguments
-	if(configuration->processArgs(argc,argv))
+	if( configuration->processArgs(argc,argv) )
+	{
+		fprintf(stdout,"\n Bad Arguments! " );
 		exit(1);
+	}
 
 	// setup firewall
-	if(configuration->getConfigValue(OPT_FIREWALL_INTF) == 1)
+	if( configuration->getConfigValue(OPT_FIREWALL_INTF))
 	{
 		/**
 		 * the network interface is specified for automatic firewall rules
 		 * Rams Feature
-		 */
+		 * OS Check
+		 * 	For each OS check to send in the correct IPtable rules
+		 * 		windows and mac not configured yet
+		 * 		Added to check for Iptable rules already entered
+		 **/
 		Utils::preConfigFirewall(configuration);
+
+	}
+
+	// check if both blocking options are set
+	if( configuration->getConfigValue(OPT_TIMER_BLK) && configuration->getConfigValue(OPT_AUTO_BLK) )
+	{
+		fprintf(stdout,"\n Can only set one automatic IP blocking option! " );
+		exit(1);
 	}
 
 	// run as daemon
-	if(configuration->getConfigValue(OPT_RUN_AS_D))
+	if( configuration->getConfigValue(OPT_RUN_AS_D) )
 		Utils::daemonize(configuration);
 
 	server = new Server(configuration);
