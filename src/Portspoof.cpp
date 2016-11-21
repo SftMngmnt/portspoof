@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 	// check if both blocking options are set
 	if( configuration->getConfigValue(OPT_TIMER_BLK) && configuration->getConfigValue(OPT_AUTO_BLK) )
 	{
-		fprintf(stdout,"\n Can only set one automatic IP blocking option! " );
+		fprintf(stdout,"\n Can only set one automatic IP blocking option! \n" );
 		exit(1);
 	}
 
