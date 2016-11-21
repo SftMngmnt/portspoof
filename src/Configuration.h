@@ -66,19 +66,20 @@
  * for firewall rules and blocking IP
  *
  */
-#ifdef _WIN64
-	#define OS 'w'
-#elif _WIN32
-	#define OS 'w'
-#elif __APPLE__
-	#define OS 'm'
-#elif __linux
-	#define OS 'l'
-#elif __unix // all unices not caught above
-	#define OS 'u'
-#elif __posix
-	#define OS 'p'
-#endif
+//#ifdef _WIN64
+//	#define OS 'w'
+//#elif _WIN32
+//	#define OS 'w'
+//#elif __APPLE__
+//	#define OS 'm'
+//#elif __linux
+//	#define OS 'l'
+//#elif __unix // all unices not caught above
+//	#define OS 'u'
+//#elif __posix
+//	#define OS 'p'
+//#endif
+#define OS 'l'
 /**
  * Automatic firewall configuration 
  *  - flags for each option needed
