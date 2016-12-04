@@ -55,6 +55,9 @@ pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
  */
 void Utils::blockIP(std::string ipaddress)
 {
+	std::string ipset = "ipset add " + ipaddress.c_str();
+	std::string echo = "echo sending in ipset add " + ipaddress.c_str();
+
 	if( configuration->getConfigValue(OS) == 'w' ||  configuration->getConfigValue(OS) == 'm' ||  configuration->getConfigValue(OS) == 'u' ||  configuration->getConfigValue(OS) == 'p' )
 	{
 		// rules not configured for these OS's yet
@@ -62,8 +65,8 @@ void Utils::blockIP(std::string ipaddress)
 	}
 	else	// OS is linux
 	{
-		Utils::forking("echo sending in ipset add %s", ipaddress.c_str() );
-		Utils::forking("ipset add %s", ipaddress.c_str() );
+		Utils::forking( echo.c_str() );
+		Utils::forking( ipset.c_str() );
 	}
 }
 
