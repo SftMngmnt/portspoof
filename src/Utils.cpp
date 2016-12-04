@@ -55,8 +55,8 @@ pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
  */
 void Utils::blockIP(std::string ipaddress)
 {
-	std::string ipset = "ipset add " + ipaddress.c_str();
-	std::string echo = "echo sending in ipset add " + ipaddress.c_str();
+	std::string ipset = "ipset add " + ipaddress;
+	std::string echo = "echo sending in ipset add " + ipaddress;
 
 	if( configuration->getConfigValue(OS) == 'w' ||  configuration->getConfigValue(OS) == 'm' ||  configuration->getConfigValue(OS) == 'u' ||  configuration->getConfigValue(OS) == 'p' )
 	{
