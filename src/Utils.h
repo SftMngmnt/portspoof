@@ -89,7 +89,7 @@ class Utils {
 		static void daemonize(Configuration* configuration);
 		static void preConfigFirewall(Configuration* configuration);
 		static void forking(std::string single_command);
-		static void blockIP(std::string ipaddress);
+		static void blockIP(std::string ipaddress, std::string ipset_name);
 
 };
 
