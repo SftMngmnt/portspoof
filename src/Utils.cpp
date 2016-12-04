@@ -58,12 +58,12 @@ void Utils::blockIP(std::string ipaddress)
 	if( configuration->getConfigValue(OS) == 'w' ||  configuration->getConfigValue(OS) == 'm' ||  configuration->getConfigValue(OS) == 'u' ||  configuration->getConfigValue(OS) == 'p' )
 	{
 		// rules not configured for these OS's yet
-		fprintf(stdout,"\nCannot configure Firewall for your operating system yet! %s", ipaddress);
+		fprintf(stdout,"\nCannot configure Firewall for your operating system yet! %s", ipaddress.c_str() );
 	}
 	else	// OS is linux
 	{
-		Utils::forking("echo sending in ipset add " + ipaddress);
-		Utils::forking("ipset add " + ipaddress);
+		Utils::forking("echo sending in ipset add " + ipaddress.c_str() );
+		Utils::forking("ipset add " + ipaddress.c_str() );
 	}
 }
 
