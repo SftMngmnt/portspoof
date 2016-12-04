@@ -62,8 +62,8 @@ void Utils::blockIP(std::string ipaddress)
 	}
 	else	// OS is linux
 	{
-		Utils::forking("echo sending in ipset add " + ipaddress.c_str() );
-		Utils::forking("ipset add " + ipaddress.c_str() );
+		Utils::forking("echo sending in ipset add %s", ipaddress.c_str() );
+		Utils::forking("ipset add %s", ipaddress.c_str() );
 	}
 }
 
